@@ -255,3 +255,10 @@ div:focus {
     content: " ";
   }
 }
+
+.el-button,
+.el-card,
+.el-dropdown-menu,
+.el-input__wrapper {
+  border-radius: 0.5rem !important;
+}

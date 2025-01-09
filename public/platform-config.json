@@ -16,9 +16,9 @@
   "HideFooter": false,
   "Stretch": false,
   "SidebarStatus": true,
-  "EpThemeColor": "#409EFF",
+  "EpThemeColor": "#1F883D",
   "ShowLogo": true,
-  "ShowModel": "smart",
+  "ShowModel": "chrome",
   "MenuArrowIconNoTransition": false,
   "CachingAsyncRoutes": false,
   "TooltipEffect": "light",
@@ -28,7 +28,10 @@
     "amapKey": "adc139d56406f3844c8f1cf1c6b65c41",
     "options": {
       "resizeEnable": true,
-      "center": [113.6401, 34.72468],
+      "center": [
+        113.6401,
+        34.72468
+      ],
       "zoom": 12
     }
   }

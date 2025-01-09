@@ -212,6 +212,8 @@ login:
   pureWeChatLogin: 微信登录
   pureAlipayLogin: 支付宝登录
   pureQQLogin: QQ登录
+  pureTitle: 欢迎回来
+  pureLoginSubtitle: 请输入您的帐户信息以开始管理您的项目
   pureWeiBoLogin: 微博登录
   purePhone: 手机号码
   pureSmsVerifyCode: 短信验证码

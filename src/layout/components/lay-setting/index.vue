@@ -335,25 +335,6 @@ onUnmounted(() => removeMatchMedia);
         "
       />
 
-      <p :class="['mt-5', pClass]">{{ t("panel.pureThemeColor") }}</p>
-      <ul class="theme-color">
-        <li
-          v-for="(item, index) in themeColors"
-          v-show="showThemeColors(item.themeColor)"
-          :key="index"
-          :style="getThemeColorStyle(item.color)"
-          @click="setLayoutThemeColor(item.themeColor)"
-        >
-          <el-icon
-            style="margin: 0.1em 0.1em 0 0"
-            :size="17"
-            :color="getThemeColor(item.themeColor)"
-          >
-            <IconifyIconOffline :icon="Check" />
-          </el-icon>
-        </li>
-      </ul>
-
       <p :class="['mt-5', pClass]">{{ t("panel.pureLayoutModel") }}</p>
       <ul class="pure-theme">
         <li

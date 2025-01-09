@@ -11,14 +11,15 @@ import LaySidebarTopCollapse from "../lay-sidebar/components/SidebarTopCollapse.
 import GlobalizationIcon from "@/assets/svg/globalization.svg?component";
 import AccountSettingsIcon from "@iconify-icons/ri/user-settings-line";
 import LogoutCircleRLine from "@iconify-icons/ri/logout-circle-r-line";
-import Setting from "@iconify-icons/ri/settings-3-line";
 import Check from "@iconify-icons/ep/check";
+import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
+import dayIcon from "@/assets/svg/day.svg?component";
+import darkIcon from "@/assets/svg/dark.svg?component";
 
 const {
   layout,
   device,
   logout,
-  onPanel,
   pureApp,
   username,
   userAvatar,
@@ -28,6 +29,7 @@ const {
   getDropdownItemStyle,
   getDropdownItemClass
 } = useNav();
+const { dataTheme, dataThemeChange } = useDataThemeChange();
 
 const { t, locale, translationCh, translationEn } = useTranslationLang();
 </script>
@@ -51,6 +53,13 @@ const { t, locale, translationCh, translationEn } = useTranslationLang();
     <div v-if="layout === 'vertical'" class="vertical-header-right">
       <!-- 菜单搜索 -->
       <LaySearch id="header-search" />
+      <el-switch
+        v-model="dataTheme"
+        inline-prompt
+        :active-icon="dayIcon"
+        :inactive-icon="darkIcon"
+        @change="dataThemeChange"
+      />
       <!-- 国际化 -->
       <el-dropdown id="header-translation" trigger="click">
         <GlobalizationIcon
@@ -112,13 +121,6 @@ const { t, locale, translationCh, translationEn } = useTranslationLang();
           </el-dropdown-menu>
         </template>
       </el-dropdown>
-      <span
-        class="set-icon navbar-bg-hover"
-        :title="t('buttons.pureOpenSystemSet')"
-        @click="onPanel"
-      >
-        <IconifyIconOffline :icon="Setting" />
-      </span>
     </div>
   </div>
 </template>

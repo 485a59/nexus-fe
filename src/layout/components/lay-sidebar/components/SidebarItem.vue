@@ -9,11 +9,11 @@ import SidebarLinkItem from "./SidebarLinkItem.vue";
 import SidebarExtraIcon from "./SidebarExtraIcon.vue";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import {
-  type PropType,
+  computed,
   type CSSProperties,
+  type PropType,
   ref,
   toRaw,
-  computed,
   useAttrs
 } from "vue";
 
@@ -52,6 +52,7 @@ const getSubMenuIconStyle = computed((): CSSProperties => {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
+    borderRadius: "8px",
     margin:
       layout.value === "horizontal"
         ? "0 5px 0 0"

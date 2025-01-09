@@ -4,11 +4,12 @@ import Motion from "./utils/motion";
 import { useRouter } from "vue-router";
 import { message } from "@/utils/message";
 import { loginRules } from "./utils/rule";
-import TypeIt from "@/components/ReTypeit";
+import { ReTitle } from "@/components/ReTitle";
 import { debounce } from "@pureadmin/utils";
 import { useNav } from "@/layout/hooks/useNav";
 import { useEventListener } from "@vueuse/core";
 import type { FormInstance } from "element-plus";
+import { illustration } from "@/views/login/utils/static";
 import { $t, transformI18n } from "@/plugins/i18n";
 import { operates, thirdParty } from "./utils/enums";
 import { useLayout } from "@/layout/hooks/useLayout";
@@ -17,10 +18,9 @@ import LoginRegist from "./components/LoginRegist.vue";
 import LoginUpdate from "./components/LoginUpdate.vue";
 import LoginQrCode from "./components/LoginQrCode.vue";
 import { useUserStoreHook } from "@/store/modules/user";
-import { initRouter, getTopMenu } from "@/router/utils";
-import { bg, avatar, illustration } from "./utils/static";
+import { getTopMenu, initRouter } from "@/router/utils";
 import { ReImageVerify } from "@/components/ReImageVerify";
-import { ref, toRaw, reactive, watch, computed } from "vue";
+import { computed, reactive, ref, toRaw, watch } from "vue";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import { useTranslationLang } from "@/layout/hooks/useTranslationLang";
 import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
@@ -121,7 +121,6 @@ watch(loginDay, value => {
 
 <template>
   <div class="select-none">
-    <img :src="bg" class="wave" />
     <div class="flex-c absolute right-5 top-3">
       <!-- 主题 -->
       <el-switch
@@ -170,13 +169,18 @@ watch(loginDay, value => {
       </div>
       <div class="login-box">
         <div class="login-form">
-          <avatar class="avatar" />
+          <!--          <avatar class="avatar" />-->
           <Motion>
-            <h2 class="outline-none">
-              <TypeIt
-                :options="{ strings: [title], cursor: false, speed: 100 }"
-              />
-            </h2>
+            <ReTitle>
+              <slot name="title"> {{ t("login.pureTitle") }} 👋🏻</slot>
+              <template #desc>
+                <span class="text-muted-foreground">
+                  <slot name="subTitle">
+                    {{ t("login.pureLoginSubtitle") }}
+                  </slot>
+                </span>
+              </template>
+            </ReTitle>
           </Motion>
 
           <el-form
@@ -275,6 +279,7 @@ watch(loginDay, value => {
                   size="default"
                   type="primary"
                   :loading="loading"
+                  style="height: 36px"
                   :disabled="disabled"
                   @click="onLogin(ruleFormRef)"
                 >
@@ -332,18 +337,6 @@ watch(loginDay, value => {
           <LoginUpdate v-if="currentPage === 4" />
         </div>
       </div>
-    </div>
-    <div
-      class="w-full flex-c absolute bottom-3 text-sm text-[rgba(0,0,0,0.6)] dark:text-[rgba(220,220,242,0.8)]"
-    >
-      Copyright © 2020-present
-      <a
-        class="hover:text-primary"
-        href="https://github.com/pure-admin"
-        target="_blank"
-      >
-        &nbsp;{{ title }}
-      </a>
     </div>
   </div>
 </template>
