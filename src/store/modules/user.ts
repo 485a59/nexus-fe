@@ -80,7 +80,7 @@ export const useUserStore = defineStore("pure-user", {
       return new Promise<UserResult>((resolve, reject) => {
         getLogin(data)
           .then(data => {
-            if (data?.success) setToken(data.data);
+            if (data?.code ===  200) setToken(data.data);
             resolve(data);
           })
           .catch(error => {

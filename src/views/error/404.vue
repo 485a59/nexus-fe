@@ -11,7 +11,7 @@ const router = useRouter();
 
 <template>
   <div class="flex justify-center items-center h-[640px]">
-    <noExist />
+    <noExist class="w-96" />
     <div class="ml-12">
       <p
         v-motion

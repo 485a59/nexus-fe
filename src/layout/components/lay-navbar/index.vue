@@ -15,6 +15,8 @@ import Check from "@iconify-icons/ep/check";
 import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
 import dayIcon from "@/assets/svg/day.svg?component";
 import darkIcon from "@/assets/svg/dark.svg?component";
+import MenuFold from "@iconify-icons/ri/menu-fold-fill";
+import MenuUnfold from "@iconify-icons/ri/menu-unfold-fill";
 
 const {
   layout,
@@ -27,7 +29,8 @@ const {
   toggleSideBar,
   toAccountSettings,
   getDropdownItemStyle,
-  getDropdownItemClass
+  getDropdownItemClass,
+  toggleLayout
 } = useNav();
 const { dataTheme, dataThemeChange } = useDataThemeChange();
 
@@ -52,7 +55,7 @@ const { t, locale, translationCh, translationEn } = useTranslationLang();
 
     <div v-if="layout === 'vertical'" class="vertical-header-right">
       <!-- 菜单搜索 -->
-      <LaySearch id="header-search" />
+      <!-- <LaySearch id="header-search" /> -->
       <el-switch
         v-model="dataTheme"
         inline-prompt
@@ -121,6 +124,17 @@ const { t, locale, translationCh, translationEn } = useTranslationLang();
           </el-dropdown-menu>
         </template>
       </el-dropdown>
+      <!-- 导航模式切换 -->
+      <div
+        class="layout-switch navbar-bg-hover"
+        :class="[device === 'mobile' ? 'mobile' : 'pc']"
+        @click="toggleLayout()"
+      >
+        <IconifyIconOffline
+          :icon="layout === 'vertical' ? MenuUnfold : MenuFold"
+          class="w-[40px] h-[48px] p-[11px] cursor-pointer outline-none"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -165,6 +179,29 @@ const { t, locale, translationCh, translationEn } = useTranslationLang();
         border-radius: 50%;
       }
     }
+
+    .layout-switch {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      border-radius: 4px;
+      padding: 0 2px;
+
+      &:hover {
+        background-color: var(--el-fill-color-light);
+      }
+
+      &.mobile {
+        padding: 0;
+      }
+
+      &.pc {
+        width: 40px;
+        height: 48px;
+      }
+    }
   }
 
   .breadcrumb-container {
@@ -196,6 +233,17 @@ const { t, locale, translationCh, translationEn } = useTranslationLang();
     display: inline-flex;
     flex-wrap: wrap;
     min-width: 100%;
+  }
+}
+
+// 暗黑模式下的样式调整
+:root[data-theme="dark"] {
+  .vertical-header-right {
+    .layout-switch {
+      &:hover {
+        background-color: var(--el-fill-color-dark);
+      }
+    }
   }
 }
 </style>

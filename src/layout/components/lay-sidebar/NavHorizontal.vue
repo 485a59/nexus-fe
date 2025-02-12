@@ -10,6 +10,13 @@ import { useTranslationLang } from "../../hooks/useTranslationLang";
 import { usePermissionStoreHook } from "@/store/modules/permission";
 import LaySidebarItem from "../lay-sidebar/components/SidebarItem.vue";
 import LaySidebarFullScreen from "../lay-sidebar/components/SidebarFullScreen.vue";
+import { useDark, useToggle } from "@vueuse/core";
+import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
+import dayIcon from "@/assets/svg/day.svg?component";
+import darkIcon from "@/assets/svg/dark.svg?component";
+import MenuFold from "@iconify-icons/ri/menu-fold-fill";
+import MenuUnfold from "@iconify-icons/ri/menu-unfold-fill";
+const { dataTheme, dataThemeChange } = useDataThemeChange();
 
 import GlobalizationIcon from "@/assets/svg/globalization.svg?component";
 import AccountSettingsIcon from "@iconify-icons/ri/user-settings-line";
@@ -37,8 +44,18 @@ const {
   avatarsStyle,
   toAccountSettings,
   getDropdownItemStyle,
-  getDropdownItemClass
+  getDropdownItemClass,
+  layout,
+  toggleLayout,
+  device
 } = useNav();
+
+const isDark = useDark({
+  storageKey: "vueuse-color-scheme",
+  valueDark: "dark",
+  valueLight: "light"
+});
+const toggleDark = useToggle(isDark);
 
 const defaultActive = computed(() =>
   !isAllEmpty(route.meta?.activePath) ? route.meta.activePath : route.path
@@ -58,7 +75,7 @@ onMounted(() => {
 <template>
   <div
     v-loading="usePermissionStoreHook().wholeMenus.length === 0"
-    class="horizontal-header"
+    class="horizontal-header pl-10 justify-around"
   >
     <div v-if="showLogo" class="horizontal-header-left" @click="backTopMenu">
       <img :src="getLogo()" alt="logo" />
@@ -79,8 +96,14 @@ onMounted(() => {
       />
     </el-menu>
     <div class="horizontal-header-right">
-      <!-- 菜单搜索 -->
-      <LaySearch id="header-search" />
+      <!-- 主题切换 -->
+      <el-switch
+        v-model="dataTheme"
+        inline-prompt
+        :active-icon="dayIcon"
+        :inactive-icon="darkIcon"
+        @change="dataThemeChange"
+      />
       <!-- 国际化 -->
       <el-dropdown id="header-translation" trigger="click">
         <GlobalizationIcon
@@ -140,13 +163,29 @@ onMounted(() => {
           </el-dropdown-menu>
         </template>
       </el-dropdown>
-      <span
-        class="set-icon navbar-bg-hover"
-        :title="t('buttons.pureOpenSystemSet')"
-        @click="onPanel"
+      <!-- 主题切换 -->
+      <!-- <div
+        class="theme-switch navbar-bg-hover"
+        :class="[device === 'mobile' ? 'mobile' : 'pc']"
+        @click="toggleDark()"
       >
-        <IconifyIconOffline :icon="Setting" />
-      </span>
+        <IconifyIconOffline
+          :icon="isDark ? Sun : Moon"
+          class="w-[40px] h-[48px] p-[11px] cursor-pointer outline-none"
+        />
+      </div> -->
+
+      <!-- 导航模式切换 -->
+      <div
+        class="layout-switch navbar-bg-hover"
+        :class="[device === 'mobile' ? 'mobile' : 'pc']"
+        @click="toggleLayout()"
+      >
+        <IconifyIconOffline
+          :icon="layout === 'vertical' ? MenuUnfold : MenuFold"
+          class="w-[40px] h-[48px] p-[11px] cursor-pointer outline-none"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -179,6 +218,82 @@ onMounted(() => {
     display: inline-flex;
     flex-wrap: wrap;
     min-width: 100%;
+  }
+}
+
+.horizontal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  background: var(--el-bg-color);
+  height: 50px;
+  border-bottom: 1px solid var(--el-border-color-light);
+  transition: background-color 0.3s;
+
+  .horizontal-header-left {
+    span {
+      color: var(--el-text-color-primary);
+      transition: color 0.3s;
+    }
+  }
+}
+
+.horizontal-header-menu {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  height: 50px;
+  line-height: 50px;
+  border: none;
+}
+
+.horizontal-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.theme-switch,
+.layout-switch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  border-radius: 4px;
+  padding: 0 2px;
+
+  &:hover {
+    background-color: var(--el-fill-color-light);
+  }
+
+  &.mobile {
+    padding: 0;
+  }
+
+  &.pc {
+    width: 40px;
+    height: 48px;
+  }
+}
+
+// 暗黑模式下的样式调整
+:root[data-theme="dark"] {
+  .horizontal-header {
+    background: var(--el-bg-color);
+    border-bottom-color: var(--el-border-color-extra-light);
+
+    .horizontal-header-left span {
+      color: var(--el-text-color-primary);
+    }
+  }
+
+  .theme-switch,
+  .layout-switch {
+    &:hover {
+      background-color: var(--el-fill-color-dark);
+    }
   }
 }
 </style>

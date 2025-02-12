@@ -1,7 +1,9 @@
+import { baseUrlBackend, baseUrlFrontend } from "@/router/utils";
 import { http } from "@/utils/http";
 
 export type UserResult = {
-  success: boolean;
+  code: number;
+  message: string;
   data: {
     /** 头像 */
     avatar: string;
@@ -70,7 +72,7 @@ type ResultTable = {
 
 /** 登录 */
 export const getLogin = (data?: object) => {
-  return http.request<UserResult>("post", "/login", { data });
+  return http.request<UserResult>("post", baseUrlFrontend("auth/login"), { data });
 };
 
 /** 刷新`token` */

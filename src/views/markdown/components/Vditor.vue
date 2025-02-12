@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import "vditor/dist/index.css";
+// 引入自定义 CSS 文件
+import "@/style/vditor.css";
 import Vditor from "vditor";
 import { useDark } from "@pureadmin/utils";
 import { useIntervalFn } from "@vueuse/core";
@@ -101,5 +103,5 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="markdownRef" />
+  <div ref="markdownRef" class="vditor-container" />
 </template>

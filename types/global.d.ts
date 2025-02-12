@@ -36,6 +36,8 @@ declare global {
     mozRequestAnimationFrame: (callback: FrameRequestCallback) => number;
     oRequestAnimationFrame: (callback: FrameRequestCallback) => number;
     msRequestAnimationFrame: (callback: FrameRequestCallback) => number;
+    jQuery: typeof import('jquery');
+    $: typeof import('jquery');
   }
 
   /**

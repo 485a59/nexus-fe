@@ -153,7 +153,8 @@ export default defineFakeRoute([
             parentId: 0,
             id: 100,
             menuType: 0, // 菜单类型（0代表菜单、1代表iframe、2代表外链、3代表按钮）
-            title: "menus.pureExternalPage"
+            title: "menus.pureExternalPage",
+            showLink: false
           },
           {
             parentId: 100,

@@ -1,27 +1,10 @@
+import { baseUrlBackend } from "@/router/utils";
 import { http } from "@/utils/http";
-
-type Result = {
-  success: boolean;
-  data?: Array<any>;
-};
-
-type ResultTable = {
-  success: boolean;
-  data?: {
-    /** 列表数据 */
-    list: Array<any>;
-    /** 总条目数 */
-    total?: number;
-    /** 每页显示条目个数 */
-    pageSize?: number;
-    /** 当前页数 */
-    currentPage?: number;
-  };
-};
+import { ResultTable, Result } from "@/utils/http/types";
 
 /** 获取系统管理-用户管理列表 */
-export const getUserList = (data?: object) => {
-  return http.request<ResultTable>("post", "/user", { data });
+export const getUserList = (data?: object, params?: { pageNum: number, pageSize: number }) => {
+  return http.request<ResultTable>("post", baseUrlBackend("system/user/list"), { data, params });
 };
 
 /** 系统管理-用户管理-获取所有角色列表 */
@@ -46,7 +29,7 @@ export const getMenuList = (data?: object) => {
 
 /** 获取系统管理-部门管理列表 */
 export const getDeptList = (data?: object) => {
-  return http.request<Result>("post", "/dept", { data });
+  return http.request<Result>("post", baseUrlBackend("system/dept/list"), { data });
 };
 
 /** 获取系统监控-在线用户列表 */

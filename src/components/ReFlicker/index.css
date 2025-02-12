@@ -10,6 +10,7 @@
   background: var(--point-background);
 }
 
+
 .point-flicker:before,
 .point-flicker:after {
   content: "";

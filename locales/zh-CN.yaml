@@ -158,6 +158,40 @@ menus:
   purePiniaDoc: pinia
   pureRouterDoc: vue-router
   pureAbout: 关于
+  pureCourse: 基本信息
+  pureCurriculum: 课程管理
+  pureChapter: 章节管理
+  pureInform: 通知管理
+  course:
+    pureOverview: 概述
+    pureNotice: 通知
+    pureCriteria: 评分标准
+    pureEvaluation: 课程评价
+    pureFAQ: 常见问题
+  file:
+    myFiles: 我的文件
+    images: 图像
+    documents: 文档
+    videos: 视频
+    others: 其他
+    myShare: 我的分享
+    recycleBin: 回收站
+  pureTask: 测验与作业
+  pureExam: 考试
+  pureResource: 资料
+  pureTextbook: 课程教材
+  pureSoftware: 软件资源
+  purePPT: PPT课件
+  pureVideoResource: 视频资源
+  pureInbox: 收件箱
+  pureAnalysis: 统计
+  pureContent: 资源管理
+  pureTextbookManage: 教材管理
+  pureVideoManage: 视频管理
+  pureSoftwareManage: 软件管理
+  purePPTManage: 课件管理
+  pureNote: 笔记
+  pureDisk: 云盘
   pureResult: 结果页面
   pureSuccess: 成功页面
   pureFail: 失败页面
@@ -207,7 +241,7 @@ login:
   pureLogin: 登录
   pureThirdLogin: 第三方登录
   purePhoneLogin: 手机登录
-  pureQRCodeLogin: 二维码登录
+  pureAdminLogin: 管理员登录
   pureRegister: 注册
   pureWeChatLogin: 微信登录
   pureAlipayLogin: 支付宝登录

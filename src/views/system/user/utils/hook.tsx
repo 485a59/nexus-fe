@@ -46,8 +46,8 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
     // 左侧部门树的id
     deptId: "",
     username: "",
-    phone: "",
-    status: ""
+    phoneNumber: "",
+    status: null
   });
   const formRef = ref();
   const ruleFormRef = ref();
@@ -119,14 +119,14 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
     },
     {
       label: "部门",
-      prop: "dept.name",
+      prop: "deptName",
       minWidth: 90
     },
     {
       label: "手机号码",
-      prop: "phone",
+      prop: "phoneNumber",
       minWidth: 90,
-      formatter: ({ phone }) => hideTextAtIndex(phone, { start: 3, end: 6 })
+      formatter: ({ phoneNumber }) => hideTextAtIndex(phoneNumber, { start: 3, end: 6 })
     },
     {
       label: "状态",
@@ -272,12 +272,13 @@ export function useUser(tableRef: Ref, treeRef: Ref) {
 
   async function onSearch() {
     loading.value = true;
-    const { data } = await getUserList(toRaw(form));
-    dataList.value = data.list;
-    pagination.total = data.total;
-    pagination.pageSize = data.pageSize;
-    pagination.currentPage = data.currentPage;
-
+    const res  = await getUserList(toRaw(form), { pageNum: pagination.currentPage, pageSize: pagination.pageSize });
+    if (res.code === 200) { 
+      dataList.value = res.data.list;
+      pagination.total = res.data.total;
+      pagination.pageSize = res.data.pageSize;
+      pagination.currentPage = res.data.pageNum;
+    }
     setTimeout(() => {
       loading.value = false;
     }, 500);

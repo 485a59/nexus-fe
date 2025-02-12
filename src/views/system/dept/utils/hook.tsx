@@ -29,7 +29,7 @@ export function useDept() {
     },
     {
       label: "排序",
-      prop: "sort",
+      prop: "orderNum",
       minWidth: 70
     },
     {
@@ -110,10 +110,9 @@ export function useDept() {
           higherDeptOptions: formatHigherDeptOptions(cloneDeep(dataList.value)),
           parentId: row?.parentId ?? 0,
           name: row?.name ?? "",
-          principal: row?.principal ?? "",
           phone: row?.phone ?? "",
           email: row?.email ?? "",
-          sort: row?.sort ?? 0,
+          orderNum: row?.orderNum ?? 0,
           status: row?.status ?? 1,
           remark: row?.remark ?? ""
         }

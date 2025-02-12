@@ -13,7 +13,7 @@
   max-width: 100%;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-gap: 18rem;
+  grid-gap: 8rem;
   padding: 0 2rem;
 }
 
@@ -24,7 +24,7 @@
 }
 
 .img img {
-  width: 500px;
+  width: 400px;
 }
 
 .login-box {
@@ -47,10 +47,9 @@
   text-transform: uppercase;
   margin: 15px 0;
   color: #999;
-  font:
-    bold 200% Consolas,
-    Monaco,
-    monospace;
+  font: bold 200% Consolas,
+  Monaco,
+  monospace;
 }
 
 @media screen and (max-width: 1180px) {

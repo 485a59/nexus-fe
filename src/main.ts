@@ -1,5 +1,6 @@
 import App from "./App.vue";
 import router from "./router";
+import { Icon } from "@iconify/vue";
 import { setupStore } from "@/store";
 import { useI18n } from "@/plugins/i18n";
 import { getPlatformConfig } from "./config";
@@ -28,6 +29,7 @@ const app = createApp(App);
 
 // 自定义指令
 import * as directives from "@/directives";
+
 Object.keys(directives).forEach(key => {
   app.directive(key, (directives as { [key: string]: Directive })[key]);
 });
@@ -38,6 +40,7 @@ import {
   IconifyIconOnline,
   FontIcon
 } from "./components/ReIcon";
+
 app.component("IconifyIconOffline", IconifyIconOffline);
 app.component("IconifyIconOnline", IconifyIconOnline);
 app.component("FontIcon", FontIcon);
@@ -45,14 +48,23 @@ app.component("FontIcon", FontIcon);
 // 全局注册按钮级别权限组件
 import { Auth } from "@/components/ReAuth";
 import { Perms } from "@/components/RePerms";
+
 app.component("Auth", Auth);
 app.component("Perms", Perms);
+app.component("IconifyIcon", Icon);
 
 // 全局注册vue-tippy
 import "tippy.js/dist/tippy.css";
 import "tippy.js/themes/light.css";
 import VueTippy from "vue-tippy";
+
 app.use(VueTippy);
+
+// 引入 jQuery
+import jQuery from 'jquery';
+window.jQuery = jQuery;
+window.$ = jQuery;
+
 
 getPlatformConfig(app).then(async config => {
   setupStore(app);

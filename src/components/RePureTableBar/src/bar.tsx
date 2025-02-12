@@ -263,6 +263,7 @@ export default defineComponent({
               ? ["!w-full", "!h-full", "z-[2002]", "fixed", "inset-0"]
               : "mt-2"
           ]}
+          style="border-radius: 0.5rem !important"
         >
           <div class="flex justify-between w-full h-[60px] p-4">
             {slots?.title ? (

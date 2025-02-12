@@ -147,6 +147,28 @@ export function useNav() {
     return new URL("/logo.svg", import.meta.url).href;
   }
 
+  /** 设置导航模式 */
+  function setLayoutModel(layout: string) {
+    $storage.layout = {
+      layout,
+      theme: $storage.layout?.theme,
+      darkMode: $storage.layout?.darkMode,
+      sidebarStatus: $storage.layout?.sidebarStatus,
+      epThemeColor: $storage.layout?.epThemeColor,
+      themeColor: $storage.layout?.themeColor,
+      overallStyle: $storage.layout?.overallStyle
+    };
+    window.document.body.setAttribute("layout", layout);
+    useAppStoreHook().setLayout(layout);
+  }
+
+  /** 切换导航模式 */
+  function toggleLayout() {
+    const currentLayout = $storage.layout?.layout;
+    const newLayout = currentLayout === "vertical" ? "horizontal" : "vertical";
+    setLayoutModel(newLayout);
+  }
+
   return {
     title,
     device,
@@ -175,6 +197,8 @@ export function useNav() {
     tooltipEffect,
     toAccountSettings,
     getDropdownItemStyle,
-    getDropdownItemClass
+    getDropdownItemClass,
+    setLayoutModel,
+    toggleLayout
   };
 }

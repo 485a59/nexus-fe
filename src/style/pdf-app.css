@@ -1,0 +1,39 @@
+html[dir=ltr] .pdf-app #toolbarViewerLeft > *, html[dir=ltr] .pdf-app #toolbarViewerMiddle > *, html[dir=ltr] .pdf-app #toolbarViewerRight > *, html[dir=ltr] .pdf-app .findbar * {
+  border-radius: 0.5rem;
+}
+
+.toolbarField {
+  border-radius: 0.5rem;
+}
+
+.pdf-app .doorHanger, .pdf-app .doorHangerRight {
+  border-radius: 0.5rem;
+  border: 1px solid #e5e4e9;
+  box-shadow: none;
+}
+
+.secondary-toolbar-toggle, .verticalToolbarSeparator {
+  display: none;
+}
+
+.pdf-app .findbar, .pdf-app .secondaryToolbar, html[dir=ltr] .pdf-app #toolbarContainer, html[dir=rtl] .pdf-app #toolbarContainer {
+  box-shadow: none;
+  border: 1px solid #e5e4e9;
+}
+
+.pdf-app .secondaryToolbarButton.toggled, .pdf-app .splitToolbarButton.toggled > .toolbarButton.toggled, .pdf-app .toolbarButton.toggled {
+  border-radius: 0.5rem !important;
+}
+
+.pdf-app[class] .verticalToolbarSeparator {
+  display: none !important;
+}
+
+.pdf-app #toolbarViewer {
+  padding: 1px 1px 2px 4px !important;
+}
+
+.pdf-app .findbar, .pdf-app .secondaryToolbar, html[dir=ltr] .pdf-app #toolbarContainer, html[dir=rtl] .pdf-app #toolbarContainer {
+  border: none;
+}
+

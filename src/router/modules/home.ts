@@ -9,7 +9,7 @@ export default {
   component: Layout,
   redirect: "/welcome",
   meta: {
-    icon: "ep:home-filled",
+    icon: "ri:home-2-line",
     title: $t("menus.pureHome"),
     rank: home
   },
@@ -22,6 +22,26 @@ export default {
         title: $t("menus.pureHome"),
         showLink: VITE_HIDE_HOME === "true" ? false : true
       }
-    }
+    },
+    {
+      path: "/recommend/course1",
+      name: "https://www.icourse163.org/course/ZJITC-1464206161?from=searchPage&outVendor=zw_mooc_pcssjg_",
+      meta: {
+        title: "menus.pureColorHuntDoc",
+        keepAlive: true,
+        showLink: false,
+        roles: ["admin", "common"]
+      }
+    },
+    {
+      path: "/iframe/uigradients",
+      name: "FrameUiGradients",
+      meta: {
+        title: "menus.pureUiGradients",
+        frameSrc: "https://uigradients.com/",
+        keepAlive: true,
+        showLink: false
+      }
+    },
   ]
 } satisfies RouteConfigsTable;

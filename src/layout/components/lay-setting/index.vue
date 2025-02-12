@@ -19,7 +19,6 @@ import Segmented, { type OptionsType } from "@/components/ReSegmented";
 import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
 import { useDark, useGlobal, debounce, isNumber } from "@pureadmin/utils";
 
-import Check from "@iconify-icons/ep/check";
 import LeftArrow from "@iconify-icons/ri/arrow-left-s-line";
 import RightArrow from "@iconify-icons/ri/arrow-right-s-line";
 import DayIcon from "@/assets/svg/day.svg?component";

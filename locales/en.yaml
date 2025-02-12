@@ -158,6 +158,23 @@ menus:
   purePiniaDoc: Pinia
   pureRouterDoc: Vue-Router
   pureAbout: About
+  pureCourse: Course
+  course:
+    pureOverview: Overview
+    pureNotice: Notice
+    pureCriteria: Scoring Criteria
+    pureEvaluation: Evaluation
+    pureFAQ: FAQ
+  pureTask: Assignment
+  pureExam: Exam
+  pureResource: Resource
+  pureTextbook: Course Materials
+  purePPT: PPT Courseware
+  pureVideoResource: Video Resources
+  pureInbox: Inbox
+  pureAnalysis: Analysis
+  pureNote: Note
+  pureDisk: Cloud Disk
   pureResult: Result Page
   pureSuccess: Success Page
   pureFail: Fail Page
@@ -207,7 +224,7 @@ login:
   pureLogin: Login
   pureThirdLogin: Third Login
   purePhoneLogin: Phone Login
-  pureQRCodeLogin: QRCode Login
+  pureAdminLogin: Admin Login
   pureRegister: Register
   pureWeChatLogin: WeChat Login
   pureAlipayLogin: Alipay Login

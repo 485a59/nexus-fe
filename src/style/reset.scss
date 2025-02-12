@@ -26,7 +26,7 @@ body {
   height: 100%;
   margin: 0;
   font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB",
-    "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+  "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
   line-height: inherit;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
@@ -58,7 +58,7 @@ kbd,
 samp,
 pre {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", "Courier New", monospace;
+  "Liberation Mono", "Courier New", monospace;
   font-size: 1em;
 }
 
@@ -259,6 +259,32 @@ div:focus {
 .el-button,
 .el-card,
 .el-dropdown-menu,
-.el-input__wrapper {
+.el-aside,
+.el-input,
+.el-form,
+.el-rate,
+.el-carousel,
+.el-input__wrapper,
+.el-select__wrapper,
+.el-dropdown-menu__item,
+.el-textarea__inner,
+.el-popper,
+.el-tree-node__content {
   border-radius: 0.5rem !important;
+}
+
+.el-dropdown-menu {
+  box-shadow: none !important;
+}
+
+.el-tabs {
+  box-shadow: none !important;
+}
+
+.el-tabs--card > .el-tabs__header .el-tabs__nav {
+  border-radius: 0.5rem !important;
+}
+
+.el-card {
+  box-shadow: none !important;
 }

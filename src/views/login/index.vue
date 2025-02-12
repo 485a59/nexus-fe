@@ -16,7 +16,7 @@ import { useLayout } from "@/layout/hooks/useLayout";
 import LoginPhone from "./components/LoginPhone.vue";
 import LoginRegist from "./components/LoginRegist.vue";
 import LoginUpdate from "./components/LoginUpdate.vue";
-import LoginQrCode from "./components/LoginQrCode.vue";
+import LoginAdmin from "./components/LoginAdmin.vue";
 import { useUserStoreHook } from "@/store/modules/user";
 import { getTopMenu, initRouter } from "@/router/utils";
 import { ReImageVerify } from "@/components/ReImageVerify";
@@ -57,8 +57,8 @@ const { title, getDropdownItemStyle, getDropdownItemClass } = useNav();
 const { locale, translationCh, translationEn } = useTranslationLang();
 
 const ruleForm = reactive({
-  username: "admin",
-  password: "admin123",
+  username: "huangzhengyang",
+  password: "269138hzy",
   verifyCode: ""
 });
 
@@ -73,7 +73,7 @@ const onLogin = async (formEl: FormInstance | undefined) => {
           password: ruleForm.password
         })
         .then(res => {
-          if (res.success) {
+          if (res.code === 200) {
             // 获取后端路由
             return initRouter().then(() => {
               disabled.value = true;
@@ -165,7 +165,7 @@ watch(loginDay, value => {
     </div>
     <div class="login-container">
       <div class="img">
-        <component :is="toRaw(illustration)" />
+        <component :is="toRaw(illustration)" class="w-96" />
       </div>
       <div class="login-box">
         <div class="login-form">
@@ -330,7 +330,7 @@ watch(loginDay, value => {
           <!-- 手机号登录 -->
           <LoginPhone v-if="currentPage === 1" />
           <!-- 二维码登录 -->
-          <LoginQrCode v-if="currentPage === 2" />
+          <LoginAdmin v-if="currentPage === 2" />
           <!-- 注册 -->
           <LoginRegist v-if="currentPage === 3" />
           <!-- 忘记密码 -->
