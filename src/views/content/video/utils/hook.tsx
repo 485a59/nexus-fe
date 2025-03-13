@@ -4,27 +4,43 @@ import { h } from "vue";
 import { message } from "@/utils/message";
 import { usePublicHooks } from "../../hooks";
 import { addDialog } from "@/components/ReDialog";
-import { deviceDetection } from "@pureadmin/utils";
-import { ElMessageBox } from "element-plus";
+import type { PaginationProps } from "@pureadmin/table";
+import { deviceDetection, handleTree } from "@pureadmin/utils";
 import {
   type Ref,
   ref,
+  onMounted,
   reactive
 } from "vue";
+import { addVideo, deleteResource, getChapterList, getVideoList } from "@/api/curriculum";
+import { uploadFile } from "@/api/transfer";
 
-export function useVideo(tableRef: Ref) {
+export function useVideo() {
   const form = reactive({
     name: "",
-    lecturer: ""
+    lecturer: "",
+    chapterId: ""
   });
   const formRef = ref();
-  const loading = ref(false);
+  const loading = ref(true);
   const { switchStyle } = usePublicHooks();
+  const selectedNum = ref(0);
+  const pagination = reactive<PaginationProps>({
+    total: 0,
+    pageSize: 10,
+    currentPage: 1,
+    background: true
+  });
 
   const columns: TableColumnList = [
     {
       label: "视频名称",
-      prop: "label",
+      prop: "name",
+      minWidth: 180
+    },
+    {
+      label: "所属章节",
+      prop: "chapterName",
       minWidth: 200
     },
     {
@@ -33,14 +49,11 @@ export function useVideo(tableRef: Ref) {
       minWidth: 100
     },
     {
-      label: "时长",
-      prop: "duration",
-      minWidth: 90
-    },
-    {
-      label: "播放量",
-      prop: "views",
-      minWidth: 90
+      label: "更新时间",
+      minWidth: 120,
+      prop: "updateTime",
+      formatter: ({ updateTime }) =>
+        dayjs(updateTime).format("YYYY-MM-DD HH:mm:ss")
     },
     {
       label: "操作",
@@ -50,86 +63,72 @@ export function useVideo(tableRef: Ref) {
     }
   ];
 
-  // Mock数据
-  const mockData = [
-    {
-      id: 1,
-      label: "第一章 前端工程化基础",
-      children: [
-        {
-          id: 2,
-          label: "1.1 现代前端开发概述",
-          url: "//lf3-static.bytednsdoc.com/obj/eden-cn/nupenuvpxnuvo/xgplayer_doc/xgplayer-demo.mp4",
-          poster: "https://via.placeholder.com/800x450",
-          duration: "12:34",
-          lecturer: "张三",
-          description: "本节课介绍现代前端开发的基本概念和工具链，帮助你理解前端工程化的重要性。",
-          views: 1234
-        },
-        {
-          id: 3,
-          label: "1.2 Node.js与npm基础",
-          url: "https://www.w3schools.com/html/movie.mp4",
-          poster: "https://via.placeholder.com/800x450",
-          duration: "15:21",
-          lecturer: "李四",
-          description: "深入理解Node.js运行时环境和npm包管理工具的使用方法。",
-          views: 956
-        }
-      ]
-    },
-    {
-      id: 4,
-      label: "第二章 Vue3核心概念",
-      children: [
-        {
-          id: 5,
-          label: "2.1 组合式API详解",
-          url: "https://www.w3schools.com/html/mov_bbb.mp4",
-          poster: "https://via.placeholder.com/800x450",
-          duration: "20:15",
-          lecturer: "王五",
-          description: "全面讲解Vue3组合式API的使用方法和最佳实践。",
-          views: 2341
-        }
-      ]
+  const dataList = ref([]);
+
+  function handleUpdate(row) {
+    openDialog("修改", {
+      label: row.name,
+      chapterId: row.chapterId,
+      lecturer: row.lecturer,
+      description: row.description
+    });
+  }
+
+  async function handleDelete(row) {
+    const res = await deleteResource(row.id);
+    if (res?.code === 200) {
+      message(`您删除了视频《${row.name}》`, { type: "success" });
+      onSearch();
+    } else {
+      message("删除失败", { type: "error" });
     }
-  ];
+  }
 
-  const dataList = ref(mockData);
-
-  function handleDelete(row) {
-    message(`您删除了${row.children ? '章节' : '视频'}《${row.label}》`, { type: "success" });
+  function handleSizeChange(val: number) {
+    pagination.pageSize = val;
     onSearch();
+  }
+
+  function handleCurrentChange(val: number) {
+    pagination.currentPage = val;
+    onSearch();
+  }
+
+  function handleSelectionChange(val) {
+    selectedNum.value = val.length;
+  }
+
+  function onSelectionCancel() {
+    selectedNum.value = 0;
+    tableRef.value.getTableRef().clearSelection();
   }
 
   async function onSearch() {
     loading.value = true;
-    
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    let filteredData = JSON.parse(JSON.stringify(mockData));
-    
-    if (form.name || form.lecturer) {
-      filteredData = filteredData.map(chapter => {
-        const matchedVideos = chapter.children?.filter(video => {
-          const nameMatch = !form.name || video.label.toLowerCase().includes(form.name.toLowerCase());
-          const lecturerMatch = !form.lecturer || video.lecturer.includes(form.lecturer);
-          return nameMatch && lecturerMatch;
-        });
-        
-        if (matchedVideos?.length > 0) {
-          return {
-            ...chapter,
-            children: matchedVideos
-          };
-        }
-        return null;
-      }).filter(Boolean);
+    try {
+      const params = {
+        pageNum: pagination.currentPage,
+        pageSize: pagination.pageSize
+      };
+      
+      const data = {
+        name: form.name || undefined,
+        lecturer: form.lecturer || undefined,
+        chapterId: form.chapterId || undefined
+      };
+
+      const res = await getVideoList(data, params);
+      if (res?.code === 200) {
+        dataList.value = res.data.list;
+        pagination.total = res.data.total;
+      } else {
+        message("获取视频列表失败", { type: "error" });
+      }
+    } catch (error) {
+      message("获取视频列表失败", { type: "error" });
+    } finally {
+      loading.value = false;
     }
-    
-    dataList.value = filteredData;
-    loading.value = false;
   }
 
   const resetForm = formEl => {
@@ -139,16 +138,16 @@ export function useVideo(tableRef: Ref) {
   };
 
   function openDialog(title = "新增", row?: any) {
+    let uploadProgress = ref(0);
     addDialog({
       title: `${title}视频`,
       props: {
         formInline: {
           title,
-          parentId: row?.parentId ?? "",
           label: row?.label ?? "",
+          chapterId: row?.chapterId ?? "",
           lecturer: row?.lecturer ?? "",
           description: row?.description ?? "",
-          poster: row?.poster ?? "",
           file: null
         }
       },
@@ -157,32 +156,77 @@ export function useVideo(tableRef: Ref) {
       fullscreen: deviceDetection(),
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(editForm, { ref: formRef }),
-      beforeSure: (done, { options }) => {
+      contentRenderer: ({ options }) => h(editForm, {
+        ref: formRef,
+        formInline: options.props.formInline
+      }),
+      beforeSure: async (done, { options }) => {
         const FormRef = formRef.value.getRef();
-        const curData = options.props.formInline;
+        const curForm = FormRef.form.value;
         
-        FormRef.validate(valid => {
+        FormRef.validate(async (valid) => {
           if (valid) {
-            message(`您${title}了视频《${curData.label}》`, {
-              type: "success"
-            });
-            done();
-            onSearch();
+            try {
+              const file = curForm.file;
+              if (!file) {
+                message("请选择视频文件", { type: "warning" });
+                return;
+              }
+              uploadProgress.value = 0;
+              const md5 = await uploadFile(file, "/video", (progress) => {
+                uploadProgress.value = progress;
+              });
+              
+              if (md5 != "") {
+                const res = await addVideo({
+                  name: curForm.label,
+                  chapterId: curForm.chapterId,
+                  lecturer: curForm.lecturer,
+                  description: curForm.description,
+                  identifier: md5
+                });
+
+                if (res?.code === 200) {
+                  message(`${title}成功`, { type: "success" });
+                  done();
+                  onSearch();
+                } else {
+                  message(`${title}失败`, { type: "error" });
+                }
+              }
+            } catch (error) {
+              message(`${title}失败`, { type: "error" });
+            }
           }
         });
       }
     });
   }
 
+ const treeData = ref([]);
+
+  onMounted(async () => {
+    onSearch();
+    const { data } = await getChapterList({});
+    treeData.value = handleTree(data);
+  });
+
   return {
     form,
     loading,
     columns,
     dataList,
+    selectedNum,
+    pagination,
+    treeData,
     onSearch,
     resetForm,
     openDialog,
-    handleDelete
+    handleUpdate,
+    handleDelete,
+    handleSizeChange,
+    onSelectionCancel,
+    handleCurrentChange,
+    handleSelectionChange
   };
 } 

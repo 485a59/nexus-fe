@@ -14,29 +14,6 @@ const props = defineProps({
 });
 
 const { isDark } = useDark();
-// PDF 文件列表
-const pdfList = ref([
-  {
-    name: "农业信息技术基础",
-    url: "https://arxiv.org/pdf/2501.10353"
-  },
-  {
-    name: "数据分析与应用",
-    url: "https://xiaoxian521.github.io/hyperlink/pdf/Cookie%E5%92%8CSession%E5%8C%BA%E5%88%AB%E7%94%A8%E6%B3%95.pdf"
-  },
-  {
-    name: "农业大数据技术",
-    url: "https://xiaoxian521.github.io/hyperlink/pdf/Cookie%E5%92%8CSession%E5%8C%BA%E5%88%AB%E7%94%A8%E6%B3%95.pdf"
-  },
-  {
-    name: "农业物联网技术",
-    url: "https://xiaoxian521.github.io/hyperlink/pdf/Cookie%E5%92%8CSession%E5%8C%BA%E5%88%AB%E7%94%A8%E6%B3%95.pdf"
-  }
-]);
-
-// 当前选中的 PDF 索引和 URL
-const activePdfIndex = ref<number | null>(null);
-const activePdfUrl = ref<string | null>(null);
 
 // PDF 配置
 const pageScale = ref("page-fit");
@@ -94,11 +71,8 @@ const config = ref({
 const viewerWidth = computed(() => "100%");
 const viewerHeight = computed(() => "100%");
 
-// 加载 PDF 文件
-const loadPdf = (index: number) => {
-  activePdfIndex.value = index;
-  activePdfUrl.value = pdfList.value[index].url;
-};
+// 直接使用 props.pdfUrl
+const pdfUrl = computed(() => props.pdfUrl);
 
 // PDF 渲染完成回调
 const pagesRendered = (pdfApp: any) => {
@@ -107,17 +81,17 @@ const pagesRendered = (pdfApp: any) => {
 
 // 初始化时加载第一个 PDF
 onMounted(() => {
-  if (pdfList.value.length > 0) {
-    loadPdf(0);
+  if (pdfUrl.value) {
+    // loadPdf(0);
   }
 });
 </script>
 
 <template>
   <div class="flex h-screen bg-gray-100 dark:bg-gray-800 justify-center">
-    <div v-if="activePdfUrl" class="h-full z-20 w-4/5 p-4">
+    <div v-if="pdfUrl" class="h-full z-20 w-4/5 p-4">
       <VuePdfApp
-        :pdf="activePdfUrl"
+        :pdf="pdfUrl"
         :page-scale="pageScale"
         :theme="theme"
         class="pdf-container"
@@ -129,7 +103,7 @@ onMounted(() => {
       />
     </div>
     <div v-else class="flex items-center justify-center h-full w-4/5">
-      <p class="text-gray-500 dark:text-gray-400">请从左侧选择教材</p>
+      <p class="text-gray-500 dark:text-gray-400">无法加载 PDF 文件</p>
     </div>
   </div>
 </template>

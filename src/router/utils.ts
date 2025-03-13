@@ -36,6 +36,9 @@ export const baseUrlBackend = (url: string) => `/admin/${url}`;
 // 前台服务地址
 export const baseUrlFrontend = (url: string) => `/api/${url}`;
 
+// AI 服务地址
+export const baseUrlAi = (url: string) => `/ai/${url}`;
+
 function handRank(routeInfo: any) {
   const { name, path, parentId, meta } = routeInfo;
   return isAllEmpty(parentId)

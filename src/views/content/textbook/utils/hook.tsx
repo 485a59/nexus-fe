@@ -4,16 +4,18 @@ import { h } from "vue";
 import { message } from "@/utils/message";
 import { usePublicHooks } from "../../hooks";
 import { addDialog } from "@/components/ReDialog";
+import type { PaginationProps } from "@pureadmin/table";
 import { deviceDetection } from "@pureadmin/utils";
-import { ElMessageBox } from "element-plus";
 import {
   type Ref,
   ref,
+  onMounted,
   reactive
 } from "vue";
+import { addTextbook, deleteResource, getChapterList, getTextbookList } from "@/api/curriculum";
 import { uploadFile } from "@/api/transfer";
-import { addTextbook } from "@/api/curriculum";
-
+import { handleTree } from "@pureadmin/utils";
+const treeData = ref([]);
 export function useTextbook(tableRef: Ref) {
   const form = reactive({
     name: "",
@@ -22,8 +24,15 @@ export function useTextbook(tableRef: Ref) {
     author: ""
   });
   const formRef = ref();
-  const loading = ref(false);
+  const loading = ref(true);
   const { switchStyle } = usePublicHooks();
+  const selectedNum = ref(0);
+  const pagination = reactive<PaginationProps>({
+    total: 0,
+    pageSize: 10,
+    currentPage: 1,
+    background: true
+  });
 
   const columns: TableColumnList = [
     {
@@ -40,9 +49,8 @@ export function useTextbook(tableRef: Ref) {
       label: "出版日期",
       prop: "publishDate",
       minWidth: 120,
-      formatter: (row) => {
-        return dayjs(row.publishDate).format("YYYY-MM-DD");
-      }
+      formatter: ({ publishDate }) =>
+        dayjs(publishDate).format("YYYY-MM-DD")
     },
     {
       label: "ISBN",
@@ -60,87 +68,90 @@ export function useTextbook(tableRef: Ref) {
       minWidth: 80
     },
     {
+      label: "更新时间",
+      minWidth: 120,
+      prop: "updateTime",
+      formatter: ({ updateTime }) =>
+        dayjs(updateTime).format("YYYY-MM-DD HH:mm:ss")
+    },
+    {
       label: "操作",
       fixed: "right",
-      width: 240,
+      width: 180,
       slot: "operation"
     }
   ];
 
-  // Mock数据
-  const mockData = [
-    {
-      id: 1,
-      name: "Python程序设计",
-      publisher: "高等教育出版社",
-      publishDate: "2024-01-15",
-      isbn: "978-7-0401-5832-1",
-      author: "张三",
-      edition: "第2版",
-      subject: "信息技术",
-      description: "本教材系统介绍Python编程基础知识",
-      type: "PDF",
-      updateTime: "2024-03-21",
-      url: "/preview/textbook/python-programming.pdf"
-    },
-    {
-      id: 2,
-      name: "农业物联网导论",
-      publisher: "中国农业出版社",
-      publishDate: "2024-02-20",
-      isbn: "978-7-1091-2371-4",
-      author: "李四",
-      edition: "第1版",
-      subject: "物联网",
-      description: "介绍农业物联网的基本概念和应用",
-      type: "PDF",
-      updateTime: "2024-03-20",
-      url: "/preview/textbook/iot-introduction.pdf"
-    },
-    {
-      id: 3,
-      name: "现代农业技术",
-      publisher: "农业科学出版社",
-      publishDate: "2024-03-10",
-      isbn: "978-7-5628-4159-7",
-      author: "王五",
-      edition: "第3版",
-      subject: "农业技术",
-      description: "全面介绍现代农业技术的发展与应用",
-      type: "PDF",
-      updateTime: "2024-03-19",
-      url: "/preview/textbook/modern-agriculture.pdf"
+  const dataList = ref([]);
+
+  function handleUpdate(row) {
+    openDialog("修改", {
+      name: row.name,
+      publisher: row.publisher,
+      publishDate: row.publishDate,
+      isbn: row.isbn,
+      author: row.author,
+      edition: row.edition,
+      description: row.description
+    });
+  }
+
+  async function handleDelete(row) {
+    const res = await deleteResource(row.id);
+    if (res?.code === 200) {
+      message(`您删除了教材${row.name}`, { type: "success" });
+    } else {
+      message("删除失败", { type: "error" });
     }
-  ];
-
-  const dataList = ref(mockData);
-
-  function handleDelete(row) {
-    message(`您删除了教材《${row.name}》`, { type: "success" });
     onSearch();
+  }
+
+  function handleSizeChange(val: number) {
+    pagination.pageSize = val;
+    onSearch();
+  }
+
+  function handleCurrentChange(val: number) {
+    pagination.currentPage = val;
+    onSearch();
+  }
+
+  function handleSelectionChange(val) {
+    selectedNum.value = val.length;
+  }
+
+  function onSelectionCancel() {
+    selectedNum.value = 0;
+    tableRef.value.getTableRef().clearSelection();
   }
 
   async function onSearch() {
     loading.value = true;
-    
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    let filteredData = [...mockData];
-    
-    if (form.name) {
-      filteredData = filteredData.filter(item => 
-        item.name.toLowerCase().includes(form.name.toLowerCase())
-      );
+    try {
+      const params = {
+        pageNum: pagination.currentPage,
+        pageSize: pagination.pageSize
+      };
+      
+      const data = {
+        name: form.name || undefined,
+        subject: form.subject || undefined,
+        publisher: form.publisher || undefined,
+        author: form.author || undefined
+      };
+
+      const res = await getTextbookList(data, params);
+      if (res?.code === 200) {
+        dataList.value = res.data.list;
+        pagination.total = res.data.total;
+      } else {
+        message("获取教材列表失败", { type: "error" });
+      }
+    } catch (error) {
+      message("获取教材列表失败", { type: "error" });
+    } finally {
+      loading.value = false;
     }
-    
-    if (form.subject) {
-      filteredData = filteredData.filter(item => 
-        item.subject === form.subject
-      );
-    }
-    
-    dataList.value = filteredData;
-    loading.value = false;
   }
 
   const resetForm = formEl => {
@@ -150,9 +161,7 @@ export function useTextbook(tableRef: Ref) {
   };
 
   function openDialog(title = "新增", row?: any) {
-    const formRef = ref();
     let uploadProgress = ref(0);
-
     addDialog({
       title: `${title}教材`,
       props: {
@@ -168,41 +177,32 @@ export function useTextbook(tableRef: Ref) {
           file: null
         }
       },
-      width: "50%",
+      width: "46%",
       draggable: true,
       fullscreen: deviceDetection(),
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(editForm, { ref: formRef }),
+      contentRenderer: ({ options }) => h(editForm, {
+        ref: formRef,
+        formInline: options.props.formInline
+      }),
       beforeSure: async (done, { options }) => {
         const FormRef = formRef.value.getRef();
-        if (!FormRef) {
-          message("表单实例获取失败", { type: "error" });
-          return;
-        }
-
-        const curForm = FormRef.form?.value;
-        if (!curForm) {
-          message("表单数据获取失败", { type: "error" });
-          return;
-        }
+        const curForm = FormRef.form.value;
         
-        FormRef.validate(async valid => {
+        FormRef.validate(async (valid) => {
           if (valid) {
             try {
-              // 检查是否有文件需要上传
               const file = curForm.file;
               if (!file) {
                 message("请选择教材文件", { type: "warning" });
                 return;
               }
-
-              // 上传文件并获取返回值
               uploadProgress.value = 0;
               const md5 = await uploadFile(file, "/textbook", (progress) => {
                 uploadProgress.value = progress;
               });
-
+              
               if (md5 != "") {
                 const res = await addTextbook({
                   name: curForm.name,
@@ -214,38 +214,44 @@ export function useTextbook(tableRef: Ref) {
                   description: curForm.description,
                   identifier: md5
                 });
-                if (res.code === 200) {
+
+                if (res?.code === 200) {
+                  message(`${title}成功`, { type: "success" });
                   done();
-                  message(`教材《${curForm.name}》上传成功`, {
-                    type: "success"
-                  });
                   onSearch();
                 } else {
-                  message("文件上传失败", { type: "error" });
+                  message(`${title}失败`, { type: "error" });
                 }
-              } else {
-                message("文件上传失败", { type: "error" });
               }
             } catch (error) {
-              console.error("error", error);
-              message("文件上传失败", { type: "error" });
+              message(`${title}失败`, { type: "error" });
             }
-          } else {
-            message("请填写完整的教材信息", { type: "warning" });
           }
         });
       }
     });
   }
 
+  onMounted(async () => {
+    onSearch();
+  });
+
   return {
     form,
     loading,
     columns,
     dataList,
+    selectedNum,
+    pagination,
+    treeData,
     onSearch,
     resetForm,
     openDialog,
-    handleDelete
+    handleUpdate,
+    handleDelete,
+    handleSizeChange,
+    onSelectionCancel,
+    handleCurrentChange,
+    handleSelectionChange
   };
 } 

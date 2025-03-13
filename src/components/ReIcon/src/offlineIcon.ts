@@ -62,7 +62,7 @@ import VideoDownloadLine from "@iconify-icons/ri/video-download-line";
 import BookReadLine from "@iconify-icons/ri/book-read-line";
 import ListOrdered from "@iconify-icons/ri/list-ordered";
 import NotificationBadgeLine from "@iconify-icons/ri/notification-badge-line";
-
+import Chat3Line from "@iconify-icons/ri/chat-3-line";
 addIcon("ri:bookmark-2-line", Tag);
 addIcon("ri:file-ppt-2-line", Ppt);
 addIcon("ri:bank-card-line", Card);
@@ -89,6 +89,7 @@ addIcon("ri:information-line", InformationLine);
 addIcon("ri:terminal-window-line", TerminalWindowLine);
 addIcon("ri:checkbox-circle-line", CheckboxCircleLine);
 addIcon("ri:line-chart-line", LineChartLine);
+addIcon("ri:chat-3-line", Chat3Line);
 addIcon("ri:cloudy-2-line", Cloudy2Line);
 addIcon("ri:book-3-line", Book3Line);
 addIcon("ri:folder-3-line", Folder3Line);

@@ -4,6 +4,7 @@ import { ref, computed } from "vue";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import PdfViewer from "./PdfViewer.vue";
+
 import {
   Search,
   Download,
@@ -28,108 +29,40 @@ defineOptions({
 });
 
 const formRef = ref();
-const showPdfViewer = ref(false);
-const currentTextbook = ref(null);
 
 const {
   form,
   loading,
-  columns,
   dataList,
-  pagination,
+  currentTextbook,
+  showPdfViewer,
   onSearch,
   resetForm,
   handleDelete,
-  handleSizeChange,
-  handleCurrentChange,
-  handleSelectionChange
+  handleOpenPdf,
+  handleClosePdf,
+  handleDownload,
+  handleSelectionChange,
+  getTotalTextbooks
 } = useTextbook();
-
-// 打开PDF查看器
-const handleOpenPdf = textbook => {
-  currentTextbook.value = textbook;
-  showPdfViewer.value = true;
-};
-
-// 关闭PDF查看器
-const handleClosePdf = () => {
-  showPdfViewer.value = false;
-  currentTextbook.value = null;
-};
 
 // 初始化加载
 onSearch();
-
-// 当前展开的学科
-const activeSubjects = ref([1]);
-
-// 学科数据
-const chapterList = ref([
-  {
-    id: 1,
-    name: "信息技术",
-    textbooks: [
-      {
-        id: 1,
-        name: "Python程序设计",
-        subject: "信息技术",
-        type: "PDF",
-        updateTime: "2024-03-21",
-        url: "/preview/textbook/python-programming.pdf"
-      },
-      {
-        id: 2,
-        name: "Web开发基础",
-        subject: "信息技术",
-        type: "PDF",
-        updateTime: "2024-03-20",
-        url: "/preview/textbook/web-development.pdf"
-      }
-    ]
-  },
-  {
-    id: 2,
-    name: "数据科学",
-    textbooks: [
-      {
-        id: 3,
-        name: "数据分析实战",
-        subject: "数据科学",
-        type: "PDF",
-        updateTime: "2024-03-19",
-        url: "/preview/textbook/data-analysis.pdf"
-      }
-    ]
-  }
-]);
-
-// 获取总教材数量
-const getTotalTextbooks = () => {
-  return chapterList.value.reduce(
-    (total, subject) => total + subject.textbooks.length,
-    0
-  );
-};
-
-// 处理下载
-const handleDownload = (textbook: any) => {
-  ElMessage.info("下载功能待实现");
-};
 </script>
 
 <template>
   <div class="flex h-screen bg-gray-100 dark:bg-gray-800">
     <!-- 左侧教材预览区域 -->
-    <div class="flex-1 overflow-y-auto">
+    <div class="flex-[2] overflow-y-auto">
       <div v-if="currentTextbook" class="w-full">
         <!-- PDF 预览 -->
         <div
           class="w-full bg-white dark:bg-gray-900 rounded-lg overflow-hidden shadow-sm"
         >
           <PdfViewer
-            v-if="currentTextbook"
+            v-if="showPdfViewer && currentTextbook"
             :pdf-url="currentTextbook.url"
-            class="w-full h-[700px]"
+            class="w-full h-[800px]"
           />
         </div>
 
@@ -145,15 +78,15 @@ const handleDownload = (textbook: any) => {
               >
                 <span class="flex items-center">
                   <el-icon class="mr-1"><Document /></el-icon>
-                  {{ currentTextbook.subject }}
+                  {{ currentTextbook.publisher }}
                 </span>
                 <span class="flex items-center">
                   <el-icon class="mr-1"><Files /></el-icon>
-                  {{ currentTextbook.type }}
+                  {{ currentTextbook.author }}
                 </span>
                 <span class="flex items-center">
                   <el-icon class="mr-1"><Timer /></el-icon>
-                  {{ currentTextbook.updateTime }}
+                  第{{ currentTextbook.edition }}版
                 </span>
               </div>
             </div>
@@ -209,7 +142,7 @@ const handleDownload = (textbook: any) => {
           教材资源库
         </h2>
         <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          共 {{ chapterList.length }} 个学科 · {{ getTotalTextbooks() }} 本教材
+          共 {{ getTotalTextbooks() }} 本教材
         </p>
       </div>
 
@@ -224,46 +157,69 @@ const handleDownload = (textbook: any) => {
         />
       </div>
 
-      <!-- 学科列表 -->
+      <!-- 教材列表 -->
       <div class="p-4">
-        <el-collapse v-model="activeSubjects">
-          <el-collapse-item
-            v-for="subject in chapterList"
-            :key="subject.id"
-            :title="subject.name"
-            :name="subject.id"
-          >
+        <!-- 加载中的骨架屏 -->
+        <template v-if="loading">
+          <div v-for="i in 5" :key="i" class="animate-pulse mb-3">
             <div
-              v-for="textbook in subject.textbooks"
-              :key="textbook.id"
-              @click="handleOpenPdf(textbook)"
-              class="cursor-pointer p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
-              :class="{
-                'bg-blue-50 dark:bg-gray-800':
-                  currentTextbook?.id === textbook.id
-              }"
+              class="flex items-start p-3 rounded-lg bg-gray-100 dark:bg-gray-800"
             >
-              <div class="flex items-start">
-                <div class="w-12 h-12 mr-3">
-                  <BookIcon :text="textbook.name" />
-                </div>
-                <div class="flex-1">
-                  <h4
-                    class="text-sm font-medium text-gray-900 dark:text-gray-100"
-                  >
-                    {{ textbook.name }}
-                  </h4>
+              <div
+                class="w-12 h-12 mr-3 bg-gray-200 dark:bg-gray-700 rounded"
+              ></div>
+              <div class="flex-1">
+                <div
+                  class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"
+                ></div>
+                <div class="flex space-x-2">
                   <div
-                    class="mt-1 flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-2"
-                  >
-                    <span>{{ textbook.type }}</span>
-                    <span>{{ textbook.updateTime }}</span>
-                  </div>
+                    class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-20"
+                  ></div>
+                  <div
+                    class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16"
+                  ></div>
+                  <div
+                    class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-24"
+                  ></div>
                 </div>
               </div>
             </div>
-          </el-collapse-item>
-        </el-collapse>
+          </div>
+        </template>
+
+        <!-- 实际的教材列表 -->
+        <template v-else>
+          <div
+            v-for="textbook in dataList"
+            :key="textbook.id"
+            @click="handleOpenPdf(textbook)"
+            class="cursor-pointer p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 mb-3"
+            :class="{
+              'bg-blue-50 dark:bg-gray-800': currentTextbook?.id === textbook.id
+            }"
+          >
+            <div class="flex items-start">
+              <div class="w-12 h-12 mr-3">
+                <BookIcon :text="textbook.name" />
+              </div>
+              <div class="flex-1">
+                <h4
+                  class="text-sm font-medium text-gray-900 dark:text-gray-100"
+                >
+                  {{ textbook.name }}
+                </h4>
+                <div
+                  class="mt-1 flex items-center text-xs text-gray-500 dark:text-gray-400 space-x-2"
+                >
+                  <span>{{ textbook.publisher }}</span>
+                  <span>{{ textbook.author }}</span>
+                  <span>第{{ textbook.edition }}版</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
       </div>
     </div>
   </div>
@@ -306,5 +262,63 @@ const handleDownload = (textbook: any) => {
 .pure-table {
   border-radius: 0.5rem;
   overflow: hidden;
+}
+
+// 骨架屏动画
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+// 骨架屏渐变效果
+.bg-gray-200 {
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0,
+      rgba(255, 255, 255, 0.2) 20%,
+      rgba(255, 255, 255, 0.5) 60%,
+      rgba(255, 255, 255, 0)
+    );
+    animation: shimmer 2s infinite;
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+// 暗色模式适配
+.dark {
+  .bg-gray-200::after {
+    background-image: linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0) 0,
+      rgba(255, 255, 255, 0.05) 20%,
+      rgba(255, 255, 255, 0.1) 60%,
+      rgba(0, 0, 0, 0)
+    );
+  }
 }
 </style>

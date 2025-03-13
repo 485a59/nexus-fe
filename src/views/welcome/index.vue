@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, markRaw } from "vue";
+import { ref, markRaw, computed } from "vue";
 import ReCol from "@/components/ReCol";
 import { useRouter } from "vue-router";
 import { useDark, randomGradient } from "./utils";
@@ -24,7 +24,8 @@ import {
   Position,
   View,
   Star,
-  School
+  School,
+  User
 } from "@element-plus/icons-vue";
 const router = useRouter();
 const features = ref([
@@ -63,28 +64,52 @@ const features = ref([
 // 农业动态数据
 const agriNews = ref([
   {
-    id: 1,
-    title: "2024年农业科技发展新趋势报告发布",
-    date: "2024-03-20",
-    tag: "科技前沿",
-    views: 1234,
-    icon: DataAnalysis
+    title: "Ilya再融20亿SSI估值300亿，20人王牌团队首曝光，阵容超豪华",
+    date: "2025/03/07",
+    authors: ["新智元"],
+    url: "https://36kr.com/p/3195608674008711",
+    description: "从OpenAI到SSI，他用了9年",
+    source: "Kr36AI"
   },
   {
-    id: 2,
-    title: "智慧农业物联网应用案例分析",
-    date: "2024-03-19",
-    tag: "技术应用",
-    views: 890,
-    icon: Monitor
+    title: "智能农业数字化转型：AI技术在农业生产中的创新应用",
+    date: "2024/03/19",
+    authors: ["农业科技报"],
+    url: "https://example.com/article2",
+    description: "探讨AI技术如何改变传统农业生产方式",
+    source: "农业科技网"
   },
   {
-    id: 3,
-    title: "数字农业助力乡村振兴战略实施",
-    date: "2024-03-18",
-    tag: "政策解读",
-    views: 756,
-    icon: Document
+    title: "2024年农业物联网技术发展趋势报告发布",
+    date: "2024/03/18",
+    authors: ["中国农业科学院"],
+    url: "https://example.com/article3",
+    description: "详解农业物联网最新技术进展与应用前景",
+    source: "中国农业科技"
+  },
+  {
+    title: "数字农业助力乡村振兴：案例分析与经验总结",
+    date: "2024/03/17",
+    authors: ["农业部信息中心"],
+    url: "https://example.com/article4",
+    description: "深入分析数字农业在乡村振兴中的实践案例",
+    source: "中国农业网"
+  },
+  {
+    title: "农业大数据平台建设指南2.0版发布",
+    date: "2024/03/16",
+    authors: ["农业农村部"],
+    url: "https://example.com/article5",
+    description: "最新农业大数据平台建设标准与规范",
+    source: "中国农业信息网"
+  },
+  {
+    title: "智慧农业产业联盟成立：整合产学研资源",
+    date: "2024/03/15",
+    authors: ["农业信息化周刊"],
+    url: "https://example.com/article6",
+    description: "打造农业科技创新生态系统",
+    source: "农业科技日报"
   }
 ]);
 
@@ -161,7 +186,7 @@ const carouselItems = ref([
       "智能农业数据采集与分析实践",
       "农业信息化案例与项目实训"
     ],
-    bgImage: "src/assets/carousel/carousel1.jpg"
+    bgImage: "src/assets/carousel/carousel_1.svg"
   },
   {
     id: 2,
@@ -171,7 +196,7 @@ const carouselItems = ref([
       "智能农业设备控制与管理",
       "农业信息系统开发技术"
     ],
-    bgImage: "src/assets/carousel/carousel2.jpg"
+    bgImage: "src/assets/carousel/carousel_2.svg"
   },
   {
     id: 3,
@@ -181,7 +206,7 @@ const carouselItems = ref([
       "精准农业与遥感技术应用",
       "智能温室与环境控制系统"
     ],
-    bgImage: "src/assets/carousel/carousel3.jpg"
+    bgImage: "src/assets/carousel/carousel_3.svg"
   },
   {
     id: 4,
@@ -191,27 +216,7 @@ const carouselItems = ref([
       "农产品质量溯源技术",
       "农业决策支持系统开发"
     ],
-    bgImage: "src/assets/carousel/carousel4.jpg"
-  },
-  {
-    id: 5,
-    title: "数字乡村建设技术",
-    features: [
-      "乡村数字化转型方案",
-      "农村电子商务平台开发",
-      "智慧农村信息服务系统"
-    ],
-    bgImage: "src/assets/carousel/carousel5.jpg"
-  },
-  {
-    id: 6,
-    title: "农业物联网应用",
-    features: [
-      "农业传感器网络技术",
-      "智能灌溉与施肥系统",
-      "农业环境监测与预警"
-    ],
-    bgImage: "src/assets/carousel/carousel6.jpg"
+    bgImage: "src/assets/carousel/carousel_4.svg"
   }
 ]);
 </script>
@@ -220,9 +225,8 @@ const carouselItems = ref([
   <!-- 移除最外层的 min-h-screen div -->
   <!-- 顶部区域：概览和轮播图 -->
   <div class="relative">
-    <!-- 移除 max-w-7xl 限制，让轮播图占满宽度 -->
-    <div class="w-full">
-      <el-carousel height="500px" class="banner-carousel">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-5">
+      <el-carousel height="400px" class="banner-carousel">
         <el-carousel-item v-for="item in carouselItems" :key="item.id">
           <div
             class="carousel-content h-full relative"
@@ -231,69 +235,7 @@ const carouselItems = ref([
               backgroundSize: 'cover',
               backgroundPosition: 'center'
             }"
-          >
-            <div
-              class="absolute inset-0"
-              :class="
-                isDark ? 'bg-black bg-opacity-50' : 'bg-white bg-opacity-50'
-              "
-            ></div>
-
-            <!-- 内容区域使用 max-w-7xl 控制宽度 -->
-            <div
-              class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center relative z-10"
-            >
-              <!-- 左侧内容 -->
-              <div class="w-1/2 pr-12 pl-6">
-                <h2
-                  :class="isDark ? 'text-white' : 'text-gray-900'"
-                  class="text-4xl font-extrabold mb-6"
-                >
-                  {{ item.title }}
-                </h2>
-                <ul class="space-y-4">
-                  <li
-                    v-for="(feature, index) in item.features"
-                    :key="index"
-                    :class="isDark ? 'text-white' : 'text-gray-800'"
-                    class="flex items-center text-lg"
-                  >
-                    <el-icon class="mr-2"
-                      ><Position class="text-blue-500 font-bold"
-                    /></el-icon>
-                    {{ feature }}
-                  </li>
-                </ul>
-                <div class="mt-8 flex space-x-4">
-                  <el-button
-                    type="primary"
-                    size="large"
-                    @click="handleStartLearning"
-                  >
-                    立即学习
-                  </el-button>
-                  <el-button size="large"> 课程体系 </el-button>
-                </div>
-              </div>
-
-              <!-- 右侧SVG组件 -->
-              <div class="w-1/2 flex items-center justify-center">
-                <component
-                  :is="
-                    [
-                      Carousel1,
-                      Carousel2,
-                      Carousel3,
-                      Carousel4,
-                      Carousel5,
-                      Carousel6
-                    ][item.id - 1]
-                  "
-                  class="w-4/5 h-auto animate-float"
-                />
-              </div>
-            </div>
-          </div>
+          ></div>
         </el-carousel-item>
       </el-carousel>
     </div>
@@ -303,55 +245,52 @@ const carouselItems = ref([
   <div class="max-w-7xl mx-auto">
     <!-- 农业动态 -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <el-card class="box-card" shadow="hover">
+      <el-card class="box-card news-section" shadow="hover">
         <template #header>
           <div class="flex items-center justify-between">
             <div class="flex items-center whitespace-nowrap">
               <Monitor class="h-8 mr-2 text-blue-500 dark:text-blue-400" />
-
               <span class="text-xl font-bold text-gray-900 dark:text-white"
                 >农业动态</span
               >
             </div>
-            <el-button text>查看更多</el-button>
+            <el-button type="primary" text>查看更多</el-button>
           </div>
         </template>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div
             v-for="news in agriNews"
-            :key="news.id"
-            class="group relative bg-gray-50 dark:bg-gray-800 rounded-lg p-6 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+            :key="news.title"
+            class="news-card group relative bg-white dark:bg-gray-800 rounded-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 dark:border-gray-700"
           >
-            <div class="absolute top-0 right-0 mt-4 mr-4">
-              <el-tag
-                size="small"
-                :type="
-                  news.tag === '科技前沿'
-                    ? 'success'
-                    : news.tag === '技术应用'
-                      ? 'warning'
-                      : 'info'
-                "
-                class="opacity-90"
-              >
-                {{ news.tag }}
-              </el-tag>
-            </div>
-
-            <div class="mt-2">
+            <div class="p-5">
               <h3
-                class="text-lg font-medium text-gray-900 dark:text-white mb-3 line-clamp-2 pr-20"
+                class="text-lg font-semibold text-gray-900 dark:text-white mb-3 line-clamp-2 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
               >
-                {{ news.title }}
+                <a :href="news.url" target="_blank" class="hover:underline">{{
+                  news.title
+                }}</a>
               </h3>
-              <div
-                class="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400"
+              <p
+                class="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2"
               >
-                <span>{{ news.date }}</span>
-                <div class="flex items-center">
-                  <el-icon class="mr-1"><View /></el-icon>
-                  <span>{{ news.views }} 次阅读</span>
+                {{ news.description }}
+              </p>
+              <div class="flex items-center justify-between text-xs">
+                <div
+                  class="flex items-center space-x-2 text-gray-500 dark:text-gray-400"
+                >
+                  <el-icon><User /></el-icon>
+                  <span>{{ news.authors.join(", ") }}</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                  <span class="text-blue-500 dark:text-blue-400">{{
+                    news.source
+                  }}</span>
+                  <span class="text-gray-400 dark:text-gray-500">{{
+                    news.date
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -596,10 +535,12 @@ const carouselItems = ref([
 }
 
 .banner-carousel {
-  width: 100vw;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
 
   :deep(.el-carousel__container) {
-    height: 500px;
+    height: 400px;
   }
 
   :deep(.el-carousel__item) {
@@ -609,29 +550,7 @@ const carouselItems = ref([
 
 .carousel-content {
   transition: all 0.3s ease;
-
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    background: linear-gradient(
-      to right,
-      rgba(255, 255, 255, 0.8),
-      rgba(255, 255, 255, 0.4)
-    );
-    pointer-events: none;
-
-    .dark & {
-      background: linear-gradient(
-        to right,
-        rgba(0, 0, 0, 0.7),
-        rgba(0, 0, 0, 0.3)
-      );
-    }
-  }
+  border-radius: 8px;
 }
 
 // 轮播图指示器样式优化
@@ -800,5 +719,67 @@ const carouselItems = ref([
 
 .w-8\/10 {
   width: 80%;
+}
+
+.news-section {
+  background: linear-gradient(
+    to bottom right,
+    rgba(255, 255, 255, 0.9),
+    rgba(255, 255, 255, 0.95)
+  );
+  backdrop-filter: blur(10px);
+
+  .dark & {
+    background: linear-gradient(
+      to bottom right,
+      rgba(31, 41, 55, 0.9),
+      rgba(31, 41, 55, 0.95)
+    );
+  }
+}
+
+.news-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(to right, #3b82f6, #60a5fa);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &:hover::before {
+    opacity: 1;
+  }
+
+  .dark & {
+    background: rgba(31, 41, 55, 0.95);
+  }
+}
+
+// 添加卡片动画效果
+@keyframes cardFloat {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.news-card:hover {
+  animation: cardFloat 0.3s ease-in-out;
 }
 </style>

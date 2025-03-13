@@ -6,11 +6,7 @@
     :selected-num="selectedNum"
     :pagination="pagination"
     :selected-items="selectedItems"
-    @toggle-selection="toggleSelection"
-    @right-click="handleRightClick"
     @selection-change="handleSelectionChange"
-    @open-dialog="openDialog"
-    @delete="handleDelete"
     @context-menu-action="handleContextMenuAction"
   />
 </template>
@@ -33,10 +29,6 @@ const {
   pagination,
   handleSelectionChange,
   handleContextMenuAction,
-  toggleSelection,
-  handleRightClick,
-  openDialog,
-  handleDelete,
   loadFileList
 } = useFile();
 

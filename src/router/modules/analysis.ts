@@ -5,8 +5,8 @@ export default {
   path: "/analysis",
   redirect: "/analysis/index",
   meta: {
-    icon: "ri:line-chart-line",
-    title: $t("menus.pureAnalysis"),
+    icon: "ri:chat-3-line",
+    title: $t("menus.pureChat"),
     rank: analysis
   },
   children: [
@@ -15,7 +15,7 @@ export default {
       // name: "About",
       component: () => import("@/views/analysis/index.vue"),
       meta: {
-        title: $t("menus.pureAnalysis")
+        title: $t("menus.pureChat")
       }
     }
   ]

@@ -3,14 +3,13 @@ import { ref } from "vue";
 import { useTextbook } from "./utils/hook";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-
+import { message } from "@/utils/message";
 import Delete from "@iconify-icons/ep/delete";
 import EditPen from "@iconify-icons/ep/edit-pen";
 import Refresh from "@iconify-icons/ep/refresh";
 import AddFill from "@iconify-icons/ri/add-circle-line";
-import Preview from "@iconify-icons/ep/view";
 import Download from "@iconify-icons/ep/download";
-
+import { usePublicHooks } from "../hooks";
 defineOptions({
   name: "ContentTextbook"
 });
@@ -28,6 +27,8 @@ const {
   openDialog,
   handleDelete
 } = useTextbook(tableRef);
+
+const { handleDownload } = usePublicHooks();
 
 function onFullscreen() {
   tableRef.value.setAdaptive();
@@ -118,25 +119,15 @@ function onFullscreen() {
             <el-button
               class="reset-margin"
               link
-              type="warning"
-              :size="size"
-              :icon="useRenderIcon(Preview)"
-              @click="window.open(row.url, '_blank')"
-            >
-              预览
-            </el-button>
-            <el-button
-              class="reset-margin"
-              link
               type="primary"
               :size="size"
               :icon="useRenderIcon(Download)"
-              @click="window.open(row.url, '_blank')"
+              @click="handleDownload(row)"
             >
               下载
             </el-button>
             <el-popconfirm
-              :title="`是否确认删除教材《${row.name}》?`"
+              :title="`是否确认删除教材${row.name}?`"
               @confirm="handleDelete(row)"
             >
               <template #reference>
@@ -167,10 +158,6 @@ function onFullscreen() {
   :deep(.el-form-item) {
     margin-bottom: 12px;
   }
-}
-
-.main {
-  // 不需要设置 margin 和 padding
 }
 
 :deep(.el-button:focus-visible) {

@@ -80,6 +80,8 @@
         }"
         class="rounded-lg"
         @row-contextmenu="handleRightClick"
+        @page-size-change="handleSizeChange"
+        @page-current-change="handleCurrentChange"
         @selection-change="handleSelectionChange"
       >
         <template #operation="{ row }">
@@ -143,7 +145,9 @@ const {
   onSearch,
   handleBatchDownload,
   handleBatchDelete,
-  handleContextMenuAction
+  handleContextMenuAction,
+  handleSizeChange,
+  handleCurrentChange
 } = useFile();
 
 const currentItem = ref<any>(null);

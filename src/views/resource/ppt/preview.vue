@@ -17,73 +17,96 @@
     </div>
 
     <div class="preview-container" v-loading="loading">
-      <div id="pptx-container"></div>
+      <iframe
+        v-if="previewUrl"
+        :src="previewUrl"
+        class="w-full h-full border-0"
+        allow="fullscreen"
+      ></iframe>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { Back, Download } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
-import $ from "jquery";
 
 const route = useRoute();
 const router = useRouter();
 const pptInfo = ref<any>(null);
 const loading = ref(true);
+const previewUrl = ref("");
 
-onMounted(async () => {
-  const id = route.params.id;
-  try {
-    // TODO: 替换为实际的API调用
-    const response = await getPPTDetail(id);
-    pptInfo.value = response.data;
+// ONLYOFFICE 服务器配置
+const ONLYOFFICE_SERVER = "http://119.3.188.68:8049";
 
-    // 初始化PPT预览
-    await initPPTPreview(pptInfo.value.fileUrl);
-  } catch (error) {
-    ElMessage.error("获取PPT信息失败");
-  } finally {
-    loading.value = false;
-  }
-});
-
-const initPPTPreview = async (fileUrl: string) => {
-  try {
-    $("#pptx-container").pptxToHtml({
-      pptxFileUrl: fileUrl,
-      slidesScale: "100%",
-      slideMode: true,
-      keyBoardShortCut: true,
-      mediaProcess: true,
-      shortcutKeys: {
-        next: [34, 39],
-        prev: [33, 37],
-        first: [36],
-        last: [35],
-        fullscreen: [70]
-      },
-      success: () => {
-        loading.value = false;
-      },
-      error: (e: any) => {
-        console.error("PPT预览失败:", e);
-        ElMessage.error("PPT预览失败");
-        loading.value = false;
-      }
-    });
-  } catch (error) {
-    console.error("初始化PPT预览失败:", error);
-    ElMessage.error("初始化PPT预览失败");
-    loading.value = false;
+// 根据文件类型获取预览类型
+const getDocumentType = (fileUrl: string) => {
+  const extension = fileUrl.split(".").pop()?.toLowerCase();
+  switch (extension) {
+    case "ppt":
+    case "pptx":
+      return "presentation";
+    case "doc":
+    case "docx":
+      return "word";
+    case "xls":
+    case "xlsx":
+      return "cell";
+    case "pdf":
+      return "pdf";
+    default:
+      return "presentation";
   }
 };
 
+// 构建预览URL
+const buildPreviewUrl = (fileUrl: string) => {
+  const documentType = getDocumentType(fileUrl);
+  let appPath = "presentation";
+
+  switch (documentType) {
+    case "word":
+      appPath = "word";
+      break;
+    case "cell":
+      appPath = "cell";
+      break;
+    case "pdf":
+      appPath = "pdf";
+      break;
+  }
+
+  return (
+    `${ONLYOFFICE_SERVER}/web-apps/apps/${appPath}/main/index.html?_dc=${new Date().getTime()}` +
+    "&lang=zh-CN" +
+    "&viewer=true" +
+    "&embedded=true" +
+    `&url=${encodeURIComponent(fileUrl)}`
+  );
+};
+
+// 监听 pptInfo 变化
+watch(
+  () => route.params.ppt,
+  newPPT => {
+    if (newPPT) {
+      pptInfo.value = newPPT;
+      if (pptInfo.value?.url) {
+        previewUrl.value = buildPreviewUrl(pptInfo.value.url);
+        loading.value = false;
+      }
+    }
+  },
+  { immediate: true }
+);
+
+// 处理下载
 const handleDownload = () => {
-  if (pptInfo.value?.fileUrl) {
-    window.open(pptInfo.value.fileUrl);
+  if (pptInfo.value?.url) {
+    window.open(pptInfo.value.url);
   } else {
     ElMessage.warning("下载地址不存在");
   }
@@ -95,20 +118,8 @@ const handleDownload = () => {
   @apply h-screen flex flex-col;
 
   .preview-container {
-    @apply flex-1 bg-bg_color overflow-auto;
+    @apply flex-1 bg-bg_color;
     height: calc(100vh - 72px);
-  }
-}
-
-:deep(#pptx-container) {
-  @apply p-4;
-
-  .slide {
-    @apply mb-4 bg-white shadow-sm;
-  }
-
-  .navigate {
-    @apply fixed bottom-4 right-4 bg-white rounded-lg shadow-lg p-2;
   }
 }
 </style>

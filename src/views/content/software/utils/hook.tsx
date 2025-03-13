@@ -6,25 +6,23 @@ import { usePublicHooks } from "../../hooks";
 import { addDialog } from "@/components/ReDialog";
 import type { PaginationProps } from "@pureadmin/table";
 import { deviceDetection } from "@pureadmin/utils";
-// import { getSoftwareList } from "@/api/content";
-import { ElMessageBox } from "element-plus";
 import {
   type Ref,
   ref,
   onMounted,
   reactive
 } from "vue";
+import { addSoftware, deleteResource, getSoftwareList } from "@/api/curriculum";
+import { uploadFile } from "@/api/transfer";
 
 export function useSoftware(tableRef: Ref) {
   const form = reactive({
     name: "",
-    type: "",
-    status: ""
+    category: "",
+    platform: ""
   });
   const formRef = ref();
-  const dataList = ref([]);
   const loading = ref(true);
-  const switchLoadMap = ref({});
   const { switchStyle } = usePublicHooks();
   const selectedNum = ref(0);
   const pagination = reactive<PaginationProps>({
@@ -36,25 +34,19 @@ export function useSoftware(tableRef: Ref) {
 
   const columns: TableColumnList = [
     {
-      label: "勾选列",
-      type: "selection",
-      fixed: "left",
-      reserveSelection: true
-    },
-    {
       label: "软件名称",
       prop: "name",
-      minWidth: 150
+      minWidth: 180
     },
     {
       label: "分类",
       prop: "category",
-      minWidth: 100
+      minWidth: 120
     },
     {
       label: "版本",
       prop: "version",
-      minWidth: 90
+      minWidth: 100
     },
     {
       label: "平台",
@@ -62,33 +54,11 @@ export function useSoftware(tableRef: Ref) {
       minWidth: 120
     },
     {
-      label: "大小",
-      prop: "size",
-      minWidth: 90
-    },
-    {
-      label: "状态",
-      prop: "status",
-      minWidth: 90,
-      cellRenderer: scope => (
-        <el-switch
-          size={scope.props.size === "small" ? "small" : "default"}
-          loading={switchLoadMap.value[scope.index]?.loading}
-          v-model={scope.row.status}
-          active-value={1}
-          inactive-value={0}
-          active-text="已发布"
-          inactive-text="未发布"
-          inline-prompt
-          style={switchStyle.value}
-          onChange={() => onChange(scope as any)}
-        />
-      )
-    },
-    {
       label: "更新时间",
-      minWidth: 100,
-      prop: "updateTime"
+      minWidth: 120,
+      prop: "updateTime",
+      formatter: ({ updateTime }) =>
+        dayjs(updateTime).format("YYYY-MM-DD HH:mm:ss")
     },
     {
       label: "操作",
@@ -98,68 +68,40 @@ export function useSoftware(tableRef: Ref) {
     }
   ];
 
-  function onChange({ row, index }) {
-    ElMessageBox.confirm(
-      `确认要<strong>${
-        row.status === 0 ? "下架" : "发布"
-      }</strong><strong style='color:var(--el-color-primary)'>${
-        row.name
-      }</strong>软件吗?`,
-      "系统提示",
-      {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-        dangerouslyUseHTMLString: true,
-        draggable: true
-      }
-    )
-      .then(() => {
-        switchLoadMap.value[index] = Object.assign(
-          {},
-          switchLoadMap.value[index],
-          {
-            loading: true
-          }
-        );
-        setTimeout(() => {
-          switchLoadMap.value[index] = Object.assign(
-            {},
-            switchLoadMap.value[index],
-            {
-              loading: false
-            }
-          );
-          message("已成功修改软件状态", {
-            type: "success"
-          });
-        }, 300);
-      })
-      .catch(() => {
-        row.status === 0 ? (row.status = 1) : (row.status = 0);
-      });
-  }
+  const dataList = ref([]);
 
   function handleUpdate(row) {
-    console.log(row);
+    openDialog("修改", {
+      name: row.name,
+      category: row.category,
+      version: row.version,
+      platform: row.platform.split(","),  // 将字符串转为数组
+      description: row.description
+    });
   }
 
-  function handleDelete(row) {
-    message(`您删除了软件编号为${row.id}的这条数据`, { type: "success" });
-    onSearch();
+  async function handleDelete(row) {
+    const res = await deleteResource(row.id);
+    if (res?.code === 200) {
+      message(`您删除了软件${row.name}`, { type: "success" });
+      onSearch();
+    } else {
+      message("删除失败", { type: "error" });
+    }
   }
 
   function handleSizeChange(val: number) {
-    console.log(`${val} items per page`);
+    pagination.pageSize = val;
+    onSearch();
   }
 
   function handleCurrentChange(val: number) {
-    console.log(`current page: ${val}`);
+    pagination.currentPage = val;
+    onSearch();
   }
 
   function handleSelectionChange(val) {
     selectedNum.value = val.length;
-    tableRef.value.setAdaptive();
   }
 
   function onSelectionCancel() {
@@ -167,113 +109,32 @@ export function useSoftware(tableRef: Ref) {
     tableRef.value.getTableRef().clearSelection();
   }
 
-  function onbatchDel() {
-    const curSelected = tableRef.value.getTableRef().getSelectionRows();
-    message(`已删除软件编号为 ${curSelected.map(item => item.id)} 的数据`, {
-      type: "success"
-    });
-    tableRef.value.getTableRef().clearSelection();
-    onSearch();
-  }
-
-  // Mock数据
-  const mockData = [
-    {
-      id: 1,
-      name: "Visual Studio Code",
-      category: "开发工具",
-      version: "1.86.0",
-      platform: "Windows/Mac/Linux",
-      size: "88.5MB",
-      status: 1,
-      updateTime: "2024-03-21",
-      downloadUrl: "/download/software/vscode.exe",
-      description: "轻量级但功能强大的代码编辑器"
-    },
-    {
-      id: 2,
-      name: "Python数据分析工具包",
-      category: "数据分析",
-      version: "2.1.0",
-      platform: "Windows/Linux",
-      size: "156MB",
-      status: 1,
-      updateTime: "2024-03-20",
-      downloadUrl: "/download/software/data-analysis.zip",
-      description: "集成了常用数据分析库的Python工具包"
-    },
-    {
-      id: 3,
-      name: "农业数据采集系统",
-      category: "数据采集",
-      version: "3.2.1",
-      platform: "Windows",
-      size: "45MB",
-      status: 1,
-      updateTime: "2024-03-19",
-      downloadUrl: "/download/software/agri-collector.exe",
-      description: "用于农业生产数据的采集与管理"
-    },
-    {
-      id: 4,
-      name: "数据可视化平台",
-      category: "可视化",
-      version: "1.5.0",
-      platform: "Web",
-      size: "12MB",
-      status: 0,
-      updateTime: "2024-03-18",
-      downloadUrl: "/download/software/data-vis.zip",
-      description: "基于Web的数据可视化展示平台"
-    },
-    {
-      id: 5,
-      name: "智能灌溉控制软件",
-      category: "物联网",
-      version: "2.0.0",
-      platform: "Windows/Android",
-      size: "34MB",
-      status: 1,
-      updateTime: "2024-03-17",
-      downloadUrl: "/download/software/smart-irrigation.apk",
-      description: "基于物联网的智能灌溉控制系统"
-    }
-  ];
-
-  // 修改onSearch函数
   async function onSearch() {
     loading.value = true;
-    
-    // 模拟API调用延迟
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // 根据表单条件筛选数据
-    let filteredData = [...mockData];
-    
-    if (form.name) {
-      filteredData = filteredData.filter(item => 
-        item.name.toLowerCase().includes(form.name.toLowerCase())
-      );
+    try {
+      const params = {
+        pageNum: pagination.currentPage,
+        pageSize: pagination.pageSize
+      };
+      
+      const data = {
+        name: form.name || undefined,
+        category: form.category || undefined,
+        platform: form.platform || undefined
+      };
+
+      const res = await getSoftwareList(data, params);
+      if (res?.code === 200) {
+        dataList.value = res.data.list;
+        pagination.total = res.data.total;
+      } else {
+        message("获取软件列表失败", { type: "error" });
+      }
+    } catch (error) {
+      message("获取软件列表失败", { type: "error" });
+    } finally {
+      loading.value = false;
     }
-    
-    if (form.type) {
-      filteredData = filteredData.filter(item => 
-        item.category.toLowerCase() === form.type.toLowerCase()
-      );
-    }
-    
-    if (form.status !== "") {
-      filteredData = filteredData.filter(item => 
-        item.status === parseInt(form.status)
-      );
-    }
-    
-    dataList.value = filteredData;
-    pagination.total = filteredData.length;
-    pagination.pageSize = 10;
-    pagination.currentPage = 1;
-    
-    loading.value = false;
   }
 
   const resetForm = formEl => {
@@ -283,16 +144,18 @@ export function useSoftware(tableRef: Ref) {
   };
 
   function openDialog(title = "新增", row?: any) {
+    let uploadProgress = ref(0);
     addDialog({
       title: `${title}软件`,
       props: {
         formInline: {
           title,
           name: row?.name ?? "",
-          type: row?.type ?? "",
+          category: row?.category ?? "",
           version: row?.version ?? "",
+          platform: row?.platform ?? [],
           description: row?.description ?? "",
-          status: row?.status ?? 1
+          file: null
         }
       },
       width: "46%",
@@ -300,19 +163,48 @@ export function useSoftware(tableRef: Ref) {
       fullscreen: deviceDetection(),
       fullscreenIcon: true,
       closeOnClickModal: false,
-      contentRenderer: () => h(editForm, { ref: formRef }),
-      beforeSure: (done, { options }) => {
+      contentRenderer: ({ options }) => h(editForm, {
+        ref: formRef,
+        formInline: options.props.formInline
+      }),
+      beforeSure: async (done, { options }) => {
         const FormRef = formRef.value.getRef();
-        const curData = options.props.formInline;
+        const curForm = FormRef.form.value;
         
-        FormRef.validate(valid => {
+        FormRef.validate(async (valid) => {
           if (valid) {
-            console.log("curData", curData);
-            message(`您${title}了软件名称为${curData.name}的这条数据`, {
-              type: "success"
-            });
-            done();
-            onSearch();
+            try {
+              const file = curForm.file;
+              if (!file) {
+                message("请选择安装包文件", { type: "warning" });
+                return;
+              }
+              uploadProgress.value = 0;
+              const md5 = await uploadFile(file, "/software", (progress) => {
+                uploadProgress.value = progress;
+              });
+              
+              if (md5 != "") {
+                const res = await addSoftware({
+                  name: curForm.name,
+                  category: curForm.category,
+                  version: curForm.version,
+                  platform: curForm.platform.toString(),  // 数组转字符串
+                  description: curForm.description,
+                  identifier: md5
+                });
+
+                if (res?.code === 200) {
+                  message(`${title}成功`, { type: "success" });
+                  done();
+                  onSearch();
+                } else {
+                  message(`${title}失败`, { type: "error" });
+                }
+              }
+            } catch (error) {
+              message(`${title}失败`, { type: "error" });
+            }
           }
         });
       }
@@ -332,7 +224,6 @@ export function useSoftware(tableRef: Ref) {
     pagination,
     onSearch,
     resetForm,
-    onbatchDel,
     openDialog,
     handleUpdate,
     handleDelete,

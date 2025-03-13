@@ -95,7 +95,7 @@
         :total="pagination.total"
         layout="total, sizes, prev, pager, next, jumper"
         @size-change="handleSizeChange"
-        @current-change="handlePageChange"
+        @current-change="handleCurrentChange"
       />
     </div>
 
@@ -135,7 +135,9 @@ const {
   handleBatchDelete,
   handleBatchDownload,
   handleContextMenuAction,
-  handleFileClick
+  handleFileClick,
+  handleSizeChange,
+  handleCurrentChange
 } = useFile();
 
 const emit = defineEmits([

@@ -12,6 +12,8 @@ import { getKeyList, deviceDetection } from "@pureadmin/utils";
 import { getRoleList, getRoleMenu, getRoleMenuIds } from "@/api/system";
 import { type Ref, reactive, ref, onMounted, h, toRaw, watch } from "vue";
 import BookIcon from "../components/BookIcon.vue";
+import { getTextbookList } from "@/api/resource";
+import { ElMessage } from "element-plus";
 
 export function useTextbook() {
   const form = reactive({
@@ -26,6 +28,8 @@ export function useTextbook() {
   const selectedNum = ref(0);
   const viewMode = ref<"grid" | "table">("grid");
   const currentPath = ref("/");
+  const currentTextbook = ref(null);
+  const showPdfViewer = ref(false);
 
   const pagination = reactive<PaginationProps>({
     total: 0,
@@ -82,42 +86,23 @@ export function useTextbook() {
     }
   ];
 
-  // 模拟数据
-  const mockData = [
-    {
-      id: 1,
-      name: "农业信息技术基础",
-      subject: "信息技术",
-      type: "PDF",
-      size: "5.2MB",
-      uploadTime: "2024-03-20 10:00:00",
-      url: "https://arxiv.org/pdf/2501.10353"
-    },
-    {
-      id: 2,
-      name: "数据分析与应用",
-      subject: "数据科学",
-      type: "PDF",
-      size: "3.8MB",
-      uploadTime: "2024-03-19 15:30:00",
-      url: "path/to/pdf"
-    }
-  ];
-
   // 搜索
-  async function onSearch() {
+  const onSearch = async () => {
     loading.value = true;
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500));
-    dataList.value = mockData;
-    pagination.total = mockData.length;
-    loading.value = false;
-  }
+    try {
+      const { data } = await getTextbookList(form);
+      dataList.value = data;
+    } catch (error) {
+      console.error("获取教材列表失败:", error);
+      ElMessage.error("获取教材列表失败");
+    } finally {
+      loading.value = false;
+    }
+  };
 
   // 重置表单
-  const resetForm = formEl => {
-    if (!formEl) return;
-    formEl.resetFields();
+  const resetForm = () => {
+    form.name = "";
     onSearch();
   };
 
@@ -139,8 +124,9 @@ export function useTextbook() {
   };
 
   // 处理删除
-  const handleDelete = (row: any) => {
-    message(`已删除文件：${row.name}`, { type: "success" });
+  const handleDelete = async (row: any) => {
+    // 实现删除逻辑
+    ElMessage.success("删除成功");
     onSearch();
   };
 
@@ -156,12 +142,49 @@ export function useTextbook() {
   };
 
   // 打开PDF查看器
-  const openPdfViewer = (textbook: any) => {
+  const handleOpenPdf = (textbook: any) => {
+    // 检查文件类型和 URL
     if (!textbook.url) {
-      message("PDF文件地址不存在", { type: "error" });
+      ElMessage.warning("文件地址不存在");
       return;
     }
-    window.open(textbook.url, "_blank");
+    
+    // 检查文件扩展名
+    const fileExtension = textbook.url.split(".").pop()?.toLowerCase();
+    if (fileExtension !== "pdf") {
+      ElMessage.warning("暂不支持该文件格式预览");
+      return;
+    }
+
+    currentTextbook.value = textbook;
+    showPdfViewer.value = true;
+  };
+
+  // 关闭PDF查看器
+  const handleClosePdf = () => {
+    showPdfViewer.value = false;
+    currentTextbook.value = null;
+  };
+
+  // 处理下载
+  const handleDownload = (textbook: any) => {
+    if (!textbook.url) {
+      ElMessage.warning("文件地址不存在");
+      return;
+    }
+    
+    // 创建一个临时的 a 标签来下载文件
+    const link = document.createElement("a");
+    link.href = textbook.url;
+    link.download = textbook.name + "." + textbook.url.split(".").pop();
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // 获取总教材数量
+  const getTotalTextbooks = () => {
+    return dataList.value.length;
   };
 
   return {
@@ -174,6 +197,8 @@ export function useTextbook() {
     currentPath,
     selectedItems,
     selectedNum,
+    currentTextbook,
+    showPdfViewer,
     onSearch,
     resetForm,
     toggleViewMode,
@@ -181,6 +206,9 @@ export function useTextbook() {
     handleBatchDelete,
     handleSelectionChange,
     onSelectionCancel,
-    openPdfViewer
+    handleOpenPdf,
+    handleClosePdf,
+    handleDownload,
+    getTotalTextbooks
   };
 }

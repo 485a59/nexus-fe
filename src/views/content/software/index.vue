@@ -3,11 +3,14 @@ import { ref } from "vue";
 import { useSoftware } from "./utils/hook";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
+import { categoryOptions } from "../hooks";
 
 import Delete from "@iconify-icons/ep/delete";
 import EditPen from "@iconify-icons/ep/edit-pen";
 import Refresh from "@iconify-icons/ep/refresh";
 import AddFill from "@iconify-icons/ri/add-circle-line";
+import Download from "@iconify-icons/ep/download";
+import { usePublicHooks } from "../hooks";
 
 defineOptions({
   name: "ContentSoftware"
@@ -15,7 +18,7 @@ defineOptions({
 
 const formRef = ref();
 const tableRef = ref();
-
+const { handleDownload } = usePublicHooks();
 const {
   form,
   loading,
@@ -25,7 +28,6 @@ const {
   pagination,
   onSearch,
   resetForm,
-  onbatchDel,
   openDialog,
   handleUpdate,
   handleDelete,
@@ -54,25 +56,17 @@ const {
       </el-form-item>
       <el-form-item label="软件类型：" prop="type">
         <el-select
-          v-model="form.type"
+          v-model="form.category"
           placeholder="请选择"
           clearable
           class="!w-[180px]"
         >
-          <el-option label="数据采集" value="collection" />
-          <el-option label="数据分析" value="analysis" />
-          <el-option label="可视化" value="visualization" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="状态：" prop="status">
-        <el-select
-          v-model="form.status"
-          placeholder="请选择"
-          clearable
-          class="!w-[180px]"
-        >
-          <el-option label="已发布" value="1" />
-          <el-option label="未发布" value="0" />
+          <el-option
+            v-for="item in categoryOptions"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -145,13 +139,13 @@ const {
               link
               type="primary"
               :size="size"
-              :icon="useRenderIcon(EditPen)"
-              @click="openDialog('修改', row)"
+              :icon="useRenderIcon(Download)"
+              @click="handleDownload(row)"
             >
-              修改
+              下载
             </el-button>
             <el-popconfirm
-              :title="`是否确认删除软件编号为${row.id}的这条数据`"
+              :title="`是否确认删除软件${row.name}`"
               @confirm="handleDelete(row)"
             >
               <template #reference>

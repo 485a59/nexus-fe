@@ -10,14 +10,14 @@ import Refresh from "@iconify-icons/ep/refresh";
 import AddFill from "@iconify-icons/ri/add-circle-line";
 import Preview from "@iconify-icons/ep/view";
 import Download from "@iconify-icons/ep/download";
-
+import { usePublicHooks } from "../hooks";
 defineOptions({
   name: "ContentPPT"
 });
 
 const formRef = ref();
 const tableRef = ref();
-
+const { handleDownload } = usePublicHooks();
 const {
   form,
   loading,
@@ -26,16 +26,10 @@ const {
   selectedNum,
   onSearch,
   resetForm,
-  onbatchDel,
   openDialog,
-  addChapter,
   handleUpdate,
-  handleDelete,
-  handleSizeChange,
-  onSelectionCancel,
-  handleCurrentChange,
-  handleSelectionChange
-} = usePPT(tableRef);
+  handleDelete
+} = usePPT();
 
 function onFullscreen() {
   // 重置表格高度
@@ -59,16 +53,13 @@ function onFullscreen() {
           class="!w-[180px]"
         />
       </el-form-item>
-      <el-form-item label="状态：" prop="status">
-        <el-select
-          v-model="form.status"
-          placeholder="请选择"
+      <el-form-item label="章节名称：" prop="status">
+        <el-input
+          v-model="form.chapterName"
+          placeholder="请选择章节名称"
           clearable
           class="!w-[180px]"
-        >
-          <el-option label="已发布" value="1" />
-          <el-option label="未发布" value="0" />
-        </el-select>
+        />
       </el-form-item>
       <el-form-item>
         <el-button
@@ -121,28 +112,15 @@ function onFullscreen() {
         >
           <template #operation="{ row }">
             <el-button
-              v-if="!row.children"
-              class="reset-margin"
-              link
-              type="warning"
-              :size="size"
-              :icon="useRenderIcon(Preview)"
-              @click="window.open(row.previewUrl, '_blank')"
-            >
-              预览
-            </el-button>
-            <el-button
-              v-if="!row.children"
               class="reset-margin"
               link
               type="primary"
               :size="size"
               :icon="useRenderIcon(Download)"
-              @click="window.open(row.downloadUrl, '_blank')"
+              @click="handleDownload(row)"
             >
               下载
             </el-button>
-
             <el-popconfirm
               :title="`是否确认删除课件《${row.name}》${row?.children?.length > 0 ? '。注意下级课件也会一并删除，请谨慎操作' : ''}`"
               @confirm="handleDelete(row)"
@@ -175,10 +153,6 @@ function onFullscreen() {
   :deep(.el-form-item) {
     margin-bottom: 12px;
   }
-}
-
-.main {
-  // 不需要设置 margin 和 padding
 }
 
 :deep(.el-button:focus-visible) {

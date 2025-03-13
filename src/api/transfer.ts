@@ -2,10 +2,95 @@ import { http } from "@/utils/http";
 import SparkMD5 from "spark-md5";
 import type { Result } from "@/utils/http/types";
 import { baseUrlFrontend } from "@/router/utils";
+import pLimit from 'p-limit';
 
 // 上传文件的主函数
-export const uploadFile = async (file: File, currentPath: string, onProgress?: (progress: number) => void): Promise<String> => {
-  const chunkSize = 1024 * 1024; // 1MB 每片
+// export const uploadFile = async (file: File, currentPath: string, onProgress?: (progress: number) => void): Promise<String> => {
+//   const chunkSize = 5 * 1024 * 1024; // 5MB 每片
+//   const totalChunks = Math.ceil(file.size / chunkSize);
+//   const spark = new SparkMD5.ArrayBuffer();
+//   let currentChunk = 0;
+
+//   // 计算文件MD5
+//   const calculateMD5 = (): Promise<string> => {
+//     return new Promise((resolve, reject) => {
+//       const fileReader = new FileReader();
+//       fileReader.onload = e => {
+//         spark.append(e.target.result as ArrayBuffer);
+//         currentChunk++;
+
+//         if (currentChunk < totalChunks) {
+//           loadNextChunk();
+//         } else {
+//           resolve(spark.end());
+//         }
+//       };
+//       fileReader.onerror = () => reject(new Error("文件读取出错"));
+
+//       const loadNextChunk = () => {
+//         const start = currentChunk * chunkSize;
+//         const end = Math.min(start + chunkSize, file.size);
+//         fileReader.readAsArrayBuffer(file.slice(start, end));
+//       };
+//       loadNextChunk();
+//     });
+//   };
+
+//   // 上传分片
+//   const uploadChunk = async (chunk: Blob, chunkIndex: number, md5: string) => {
+//     const formData = new FormData();
+//     formData.append("file", chunk, file.name);
+//     formData.append("path", currentPath);
+//     formData.append("name", file.name);
+//     formData.append("chunkNumber", chunkIndex.toString());
+//     formData.append("chunkSize", chunk.size.toString());
+//     formData.append("relativePath", "");
+//     formData.append("totalChunks", totalChunks.toString());
+//     formData.append("totalSize", file.size.toString());
+//     formData.append("currentChunkSize", chunk.size.toString());
+//     formData.append("identifier", md5);
+
+//     return http.request<Result>("post", baseUrlFrontend("transfer/upload"), {
+//       data: formData,
+//       headers: {
+//         "Content-Type": "multipart/form-data"
+//       },
+//       onUploadProgress: progressEvent => {
+//         if (onProgress) {
+//           const percent = Math.round(
+//             ((chunkIndex * chunkSize + progressEvent.loaded) / file.size) * 100
+//           );
+//           onProgress(percent);
+//         }
+//       }
+//     });
+//   };
+
+//   try {
+//     // 计算文件MD5
+//     const md5 = await calculateMD5();
+
+//     // 上传所有分片
+//     for (let i = 0; i < totalChunks; i++) {
+//       const start = i * chunkSize;
+//       const end = Math.min(start + chunkSize, file.size);
+//       const chunk = file.slice(start, end);
+//       const response = await uploadChunk(chunk, i, md5);
+      
+//       if (response?.code !== 200) {
+//         return "";
+//       }
+//     }
+    
+//     return md5;
+//   } catch (error) {
+//     console.error("文件上传失败:", error);
+//     return "";
+//   }
+// };
+
+export const uploadFile = async (file: File, currentPath: string, onProgress?: (progress: number) => void): Promise<string> => {
+  const chunkSize = 5 * 1024 * 1024; // 5MB 每片
   const totalChunks = Math.ceil(file.size / chunkSize);
   const spark = new SparkMD5.ArrayBuffer();
   let currentChunk = 0;
@@ -69,24 +154,30 @@ export const uploadFile = async (file: File, currentPath: string, onProgress?: (
     // 计算文件MD5
     const md5 = await calculateMD5();
 
-    // 上传所有分片
+    // 并发上传（设置并发数为 5）
+    const limit = pLimit(5);
+    const uploadPromises = [];
+
     for (let i = 0; i < totalChunks; i++) {
       const start = i * chunkSize;
       const end = Math.min(start + chunkSize, file.size);
       const chunk = file.slice(start, end);
-      const response = await uploadChunk(chunk, i, md5);
-      
-      if (response?.code !== 200) {
-        return "";
-      }
+
+      uploadPromises.push(
+        limit(() => uploadChunk(chunk, i, md5))
+      );
     }
-    
+
+    // 等待所有分片上传完成
+    await Promise.all(uploadPromises);
+
     return md5;
   } catch (error) {
     console.error("文件上传失败:", error);
     return "";
   }
 };
+
 
 export const deleteFile = (id: string) => {
   return http.request<Result>("delete", baseUrlFrontend(`file/${id}`));

@@ -83,6 +83,18 @@ export function useFile() {
     diskStore.viewMode = mode;
   };
 
+  const handleSizeChange = (size: number) => {
+    diskStore.pagination.pageSize = size;
+    diskStore.pagination.currentPage = 1;
+    diskStore.fetchFileList(diskStore.currentPath);
+  };
+
+  const handleCurrentChange = (page: number) => {
+    diskStore.pagination.currentPage = page;
+    diskStore.fetchFileList(diskStore.currentPath);
+  };
+  
+
   // 上传文件
   const handleUpload = async (file: File) => {
     if (!file) {
@@ -276,13 +288,6 @@ export function useFile() {
   // 处理页码变化
   const handlePageChange = (page: number) => {
     diskStore.pagination.currentPage = page;
-    diskStore.fetchFileList(diskStore.currentPath);
-  };
-
-  // 处理每页条数变化
-  const handleSizeChange = (size: number) => {
-    diskStore.pagination.pageSize = size;
-    diskStore.pagination.currentPage = 1;
     diskStore.fetchFileList(diskStore.currentPath);
   };
 
@@ -620,6 +625,8 @@ export function useFile() {
     handleUpload,
     handleNewFolder,
     handleNewDocument,
+    handleSizeChange,
+    handleCurrentChange,
     // 返回 store 中的状态
     get loading() { return diskStore.loading },
     get dataList() { return diskStore.dataList },

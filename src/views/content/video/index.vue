@@ -3,7 +3,8 @@ import { ref } from "vue";
 import { useVideo } from "./utils/hook";
 import { PureTableBar } from "@/components/RePureTableBar";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-
+import { usePublicHooks } from "../hooks";
+import Download from "@iconify-icons/ep/download";
 import Delete from "@iconify-icons/ep/delete";
 import EditPen from "@iconify-icons/ep/edit-pen";
 import Refresh from "@iconify-icons/ep/refresh";
@@ -16,7 +17,7 @@ defineOptions({
 
 const formRef = ref();
 const tableRef = ref();
-
+const { handleDownload } = usePublicHooks();
 const {
   form,
   loading,
@@ -26,7 +27,7 @@ const {
   resetForm,
   openDialog,
   handleDelete
-} = useVideo(tableRef);
+} = useVideo();
 
 function onFullscreen() {
   tableRef.value.setAdaptive();
@@ -107,18 +108,17 @@ function onFullscreen() {
         >
           <template #operation="{ row }">
             <el-button
-              v-if="!row.children"
               class="reset-margin"
               link
               type="primary"
               :size="size"
-              :icon="useRenderIcon(Play)"
-              @click="window.open(row.url, '_blank')"
+              :icon="useRenderIcon(Download)"
+              @click="handleDownload(row)"
             >
-              播放
+              下载
             </el-button>
             <el-popconfirm
-              :title="`是否确认删除${row.children ? '章节' : '视频'}《${row.label}》${row?.children?.length > 0 ? '。注意下级视频也会一并删除，请谨慎操作' : ''}`"
+              :title="`是否确认删除视频${row.name}`"
               @confirm="handleDelete(row)"
             >
               <template #reference>
@@ -150,11 +150,6 @@ function onFullscreen() {
     margin-bottom: 12px;
   }
 }
-
-.main {
-  // 不需要设置 margin 和 padding
-}
-
 :deep(.el-button:focus-visible) {
   outline: none;
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { useSoftware } from "./hooks";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import {
   Search,
@@ -9,92 +9,29 @@ import {
   Platform,
   ArrowRight
 } from "@element-plus/icons-vue";
-import { ElMessage } from "element-plus";
 import SoftwareIcon from "./components/SoftwareIcon.vue";
 import EmptySelect from "@/assets/images/empty-select.svg";
+
 defineOptions({
   name: "ResourceSoftware"
 });
 
-// 当前展开的分类
-const activeCategories = ref([1]);
+const {
+  activeCategories,
+  currentSoftware,
+  searchKeyword,
+  softwareList,
+  getTotalSoftware,
+  handleDownload,
+  handleSelectSoftware,
+  handleSearch,
+  initSoftware,
+  formatFileSize,
+  formatTime
+} = useSoftware();
 
-// 软件数据
-const softwareList = ref([
-  {
-    id: 1,
-    name: "开发工具",
-    software: [
-      {
-        id: 1,
-        name: "Visual Studio Code",
-        category: "开发工具",
-        version: "1.86.0",
-        platform: "Windows/Mac/Linux",
-        size: "88.5MB",
-        updateTime: "2024-03-21",
-        downloadUrl: "/download/software/vscode.exe",
-        description: "轻量级但功能强大的代码编辑器"
-      },
-      {
-        id: 2,
-        name: "IntelliJ IDEA",
-        category: "开发工具",
-        version: "2023.3.4",
-        platform: "Windows/Mac/Linux",
-        size: "789MB",
-        updateTime: "2024-03-20",
-        downloadUrl: "/download/software/idea.exe",
-        description: "强大的Java开发IDE"
-      }
-    ]
-  },
-  {
-    id: 2,
-    name: "设计工具",
-    software: [
-      {
-        id: 3,
-        name: "Figma",
-        category: "设计工具",
-        version: "116.7.109",
-        platform: "Windows/Mac",
-        size: "156MB",
-        updateTime: "2024-03-19",
-        downloadUrl: "/download/software/figma.exe",
-        description: "专业的界面设计工具"
-      }
-    ]
-  }
-]);
-
-const currentSoftware = ref(null);
-const searchKeyword = ref("");
-
-// 获取总软件数量
-const getTotalSoftware = () => {
-  return softwareList.value.reduce(
-    (total, category) => total + category.software.length,
-    0
-  );
-};
-
-// 处理下载
-const handleDownload = (software: any) => {
-  ElMessage.success(`开始下载 ${software.name}`);
-  // 这里添加实际的下载逻辑
-  const link = document.createElement("a");
-  link.href = software.downloadUrl;
-  link.download = software.name;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
-
-// 选择软件
-const handleSelectSoftware = software => {
-  currentSoftware.value = software;
-};
+// 初始化加载
+initSoftware();
 </script>
 
 <template>
@@ -122,7 +59,7 @@ const handleSelectSoftware = software => {
                 </span>
                 <span class="flex items-center">
                   <el-icon class="mr-1"><Timer /></el-icon>
-                  {{ currentSoftware.updateTime }}
+                  {{ formatTime(currentSoftware.updateTime) }}
                 </span>
               </div>
               <p class="mt-4 text-gray-600 dark:text-gray-400">
@@ -134,7 +71,7 @@ const handleSelectSoftware = software => {
               :icon="Download"
               @click="handleDownload(currentSoftware)"
             >
-              下载 ({{ currentSoftware.size }})
+              下载 ({{ formatFileSize(currentSoftware.size) }})
             </el-button>
           </div>
         </div>
@@ -193,7 +130,7 @@ const handleSelectSoftware = software => {
       </div>
 
       <!-- 软件列表 -->
-      <div class="p-4">
+      <div class="p-4 pt-0">
         <el-collapse v-model="activeCategories">
           <el-collapse-item
             v-for="category in softwareList"
